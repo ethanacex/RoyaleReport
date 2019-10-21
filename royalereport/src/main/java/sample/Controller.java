@@ -4,21 +4,23 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import javafx.scene.control.Alert;
-import javafx.util.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.List;
 
 class Controller {
 
     //<editor-fold desc="Credentials">
-    private String ip = "86.24.159.166";
+    private String ip = "";
     private String token = "Bearer ";
     //</editor-fold>
 
@@ -331,7 +333,7 @@ class Controller {
     }
 
     private FileWriter fileBuilder(String fileName, String[] columns) throws IOException {
-        String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "reports";
+        String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
         File file = new File(path, fileName);
         try {
             boolean dirCreated = file.getParentFile().mkdirs();
@@ -348,6 +350,40 @@ class Controller {
         }
         csv.append("\n");
         return csv;
+    }
+
+    private void loadCredentials() {
+        try {
+            String path = System.getProperty("user.home") + File.separator + "Desktop"
+                    + File.separator + "RoyaleReport" + File.separator + "credentials.pref";
+            Scanner scanner = new Scanner(new File(path));
+            ip = scanner.next();
+            token = scanner.nextLine();
+        }
+        catch(IOException e) {
+            alertNotFoundError().showAndWait();
+        }
+    }
+
+    private void saveCredentials() {
+        String path = System.getProperty("user.home") + File.separator + "Desktop"
+                + File.separator + "RoyaleReport" + File.separator;
+        File file = new File(path, "credentials.pref");
+        try {
+            boolean dirCreated = file.getParentFile().mkdirs();
+            if (!dirCreated) {
+                alertOverwriteWarning().showAndWait();
+            }
+        } catch (SecurityException e) {
+            alertDirectoryBuildError().showAndWait();
+        }
+        List<String> lines = Arrays.asList(ip, token);
+        Path save = Paths.get(path);
+        try {
+            Files.write(save, lines, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private JSONObject getClan(String clanTag) throws UnirestException {
@@ -367,6 +403,10 @@ class Controller {
 
     private Alert alertOperationSuccess() {
         return createAlert(Alert.AlertType.INFORMATION, "Success", "Operation completed successfully.");
+    }
+
+    private Alert alertNotFoundError() {
+        return createAlert(Alert.AlertType.WARNING,"Error", "No default credentials found.");
     }
 
     private Alert alertWriteError() {

@@ -1,8 +1,6 @@
 package sample;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -19,6 +17,16 @@ class View {
     private Controller controller = new Controller();
 
     void initialise(Stage window) {
+
+        // Menu bar and items //
+        MenuBar menuBar = new MenuBar();
+        Menu fileMenu = new Menu("File");
+        MenuItem newToken = new MenuItem("New Credentials");
+        MenuItem loadToken = new MenuItem("Load Credentials");
+        MenuItem defaultToken = new MenuItem("Set default access");
+        MenuItem quit = new MenuItem("Quit");
+        fileMenu.getItems().addAll(newToken, loadToken, defaultToken, quit);
+        menuBar.getMenus().add(fileMenu);
 
         // Disclaimer //
         Label disclaimer = new Label("Icons courtesy of https://icons8.com");
