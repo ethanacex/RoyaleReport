@@ -352,23 +352,31 @@ class Controller {
         return csv;
     }
 
-    private void loadCredentials() {
+    public boolean loadCredentials() {
         try {
             String path = System.getProperty("user.home") + File.separator + "Desktop"
                     + File.separator + "RoyaleReport" + File.separator + "credentials.pref";
-            Scanner scanner = new Scanner(new File(path));
-            ip = scanner.next();
-            token = scanner.nextLine();
+            BufferedReader in = new BufferedReader(new FileReader(path));
+            String[] lines = new String[2];
+            int expectedTokens = 2;
+            for (int i = 0; i < expectedTokens; i++) {
+                lines[i] = in.readLine();
+            }
+            ip = lines[0];
+            token = lines[1];
         }
         catch(IOException e) {
             alertNotFoundError().showAndWait();
+            return false;
         }
+        alertLoadSuccess().showAndWait();
+        return true;
     }
 
-    private void saveCredentials() {
+    public void saveCredentials() {
         String path = System.getProperty("user.home") + File.separator + "Desktop"
-                + File.separator + "RoyaleReport" + File.separator;
-        File file = new File(path, "credentials.pref");
+                + File.separator + "RoyaleReport" + File.separator + "credentials.pref";
+        File file = new File(path);
         try {
             boolean dirCreated = file.getParentFile().mkdirs();
             if (!dirCreated) {
@@ -376,14 +384,17 @@ class Controller {
             }
         } catch (SecurityException e) {
             alertDirectoryBuildError().showAndWait();
+            return;
         }
         List<String> lines = Arrays.asList(ip, token);
         Path save = Paths.get(path);
         try {
             Files.write(save, lines, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            e.printStackTrace();
+            alertWriteError().showAndWait();
+            return;
         }
+        alertCredentialsSaved().showAndWait();
     }
 
     private JSONObject getClan(String clanTag) throws UnirestException {
@@ -403,6 +414,10 @@ class Controller {
 
     private Alert alertOperationSuccess() {
         return createAlert(Alert.AlertType.INFORMATION, "Success", "Operation completed successfully.");
+    }
+
+    private Alert alertLoadSuccess() {
+        return createAlert(Alert.AlertType.INFORMATION, "Success", "Credentials loaded successfully.");
     }
 
     private Alert alertNotFoundError() {
@@ -431,7 +446,7 @@ class Controller {
         return alert;
     }
 
-    Alert alertCredentialsSaved() {
+    private Alert alertCredentialsSaved() {
         return createAlert(Alert.AlertType.INFORMATION, "Authorisation Updated",
                 "Security clearance changed, new IP and authorisation saved.");
     }
@@ -466,7 +481,7 @@ class Controller {
     private void locateFile() {
         if (isWindows()) {
             try {
-                String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "reports";
+                String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
                 Desktop.getDesktop().open(new File(path));
             } catch (IOException e) {
                 alertDirectoryBuildError().showAndWait();
@@ -474,7 +489,7 @@ class Controller {
 
         } else if (isMac()) {
             try {
-                String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "reports";
+                String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
                 Runtime.getRuntime().exec("open " + path);
             } catch (IOException e) {
                 alertDirectoryBuildError().showAndWait();
