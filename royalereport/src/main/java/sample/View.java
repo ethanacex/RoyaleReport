@@ -1,14 +1,13 @@
 package sample;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -19,6 +18,16 @@ class View {
     private Controller controller = new Controller();
 
     void initialise(Stage window) {
+
+        // Menu bar and items //
+        MenuBar menuBar = new MenuBar();
+        Menu fileMenu = new Menu("File");
+        MenuItem newToken = new MenuItem("New Credentials");
+        MenuItem loadToken = new MenuItem("Load Credentials");
+        MenuItem defaultToken = new MenuItem("Set default access");
+        MenuItem quit = new MenuItem("Quit");
+        fileMenu.getItems().addAll(newToken, loadToken, defaultToken, quit);
+        menuBar.getMenus().add(fileMenu);
 
         // Disclaimer //
         Label disclaimer = new Label("Icons courtesy of https://icons8.com");
@@ -68,6 +77,9 @@ class View {
             controller.alertResourceError().showAndWait();
         }
 
+        // Attempt to load default data //
+        controller.loadCredentials();
+
         // Window Properties //
         window.setTitle("Manager");
         window.setScene(new Scene(root));
@@ -101,32 +113,39 @@ class View {
         // Input Boxes //
         VBox inputs = new VBox(10, ipBox, authBox);
 
-        // Submit Button //
-        Button button = new Button("Submit Credentials");
-        VBox submit = new VBox(button);
-        submit.setPadding(new Insets(5,0,10,0));
-        submit.setAlignment(Pos.CENTER);
+        // Save & Load //
+        Button save = new Button("Save Credentials");
+        Button load = new Button("Load Credentials");
+        HBox buttons = new HBox(5, save, load);
+        buttons.setPadding(new Insets(5,0,10,0));
+        buttons.setAlignment(Pos.CENTER);
 
         // Root //
-        VBox root = new VBox(15, inputs, submit);
+        VBox root = new VBox(15, inputs, buttons);
         root.setPadding(new Insets(0,10,0,10));
         root.setAlignment(Pos.CENTER);
 
-        button.setOnAction(e -> {
+        save.setOnAction(e -> {
             if (authenticate(ipTextField, authTextField)) {
-                controller.alertCredentialsSaved().showAndWait();
+                controller.saveCredentials();
                 window.close();
             }
         });
 
-        root.setOnKeyPressed(keyEvent -> {
+        load.setOnAction(e -> {
+            if (controller.loadCredentials()) {
+                window.close();
+            }
+        });
+
+/*        root.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER)  {
                 if (authenticate(ipTextField, authTextField)) {
                     controller.alertCredentialsSaved().showAndWait();
                     window.close();
                 }
             }
-        });
+        });*/
 
         // Applying Window Icon //
         try {
@@ -151,6 +170,7 @@ class View {
 
     private boolean authenticate(TextField ipTextField, TextField authTextField) {
         if (ipTextField.getText().isEmpty() || authTextField.getText().isEmpty()) {
+            controller.alertInputError().showAndWait();
             return false;
         } else {
             controller.setIp(ipTextField.getText().trim());
