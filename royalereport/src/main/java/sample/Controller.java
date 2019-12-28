@@ -72,7 +72,7 @@ class Controller {
 
         // Breaking down warlog into individual components //
         JSONArray items = getWarLog(tag).getJSONArray("items");
-        JSONObject[] wars = new JSONObject[items.length()];
+        JSONObject[] warLogs = new JSONObject[items.length()];
         JSONArray[] participantLists = new JSONArray[items.length()];
 
         // Local class to store related participant attributes //
@@ -80,15 +80,20 @@ class Controller {
 
             private String tag;
             private String name;
-            private int collectionDayBattlesPlayed = 0;
-            private int cardsEarned = 0;
-            private int numberOfBattles = 0;
-            private int battlesPlayed = 0;
-            private int wins = 0;
+            private int collectionDayBattlesPlayed;
+            private int cardsEarned;
+            private int numberOfBattles;
+            private int battlesPlayed;
+            private int wins;
 
-            private Participant(String tag, String name) {
+            private Participant(String tag, String name, int collections, int cards, int battles, int played, int wins) {
                 this.tag = tag;
                 this.name = name;
+                this.collectionDayBattlesPlayed = collections;
+                this.cardsEarned = cards;
+                this.numberOfBattles = battles;
+                this.battlesPlayed = played;
+                this.wins = wins;
             }
 
         }
@@ -97,38 +102,46 @@ class Controller {
         HashMap<String, Participant> playerData = new HashMap<>();
 
         for (int i = 0; i < items.length(); i++) {
-            wars[i] = items.getJSONObject(i);
-            participantLists[i] = wars[i].getJSONArray("participants");
+            JSONObject warLog = items.getJSONObject(i);
+            warLogs[i] = warLog;
+            participantLists[i] = warLogs[i].getJSONArray("participants");
         }
 
-        for (int i = 0; i < wars.length; i++) {
+        for (int i = 0; i < warLogs.length; i++) {
+
             JSONArray participants = participantLists[i];
+
             for (int k = 0; k < participants.length(); k++) {
-                String currentPlayerName = participants.getJSONObject(k).getString("name");
-                String currentPlayerTag = participants.getJSONObject(k).getString("tag");
-                if (!playerData.containsKey(currentPlayerName)) {
-                    playerData.put(currentPlayerName, new Participant(currentPlayerTag, currentPlayerName));
-                    playerData.get(currentPlayerName).collectionDayBattlesPlayed =
-                            participants.getJSONObject(k).getInt("collectionDayBattlesPlayed");
-                    playerData.get(currentPlayerName).cardsEarned =
-                            participants.getJSONObject(k).getInt("cardsEarned");
-                    playerData.get(currentPlayerName).numberOfBattles =
-                            participants.getJSONObject(k).getInt("numberOfBattles");
-                    playerData.get(currentPlayerName).battlesPlayed =
-                            participants.getJSONObject(k).getInt("battlesPlayed");
-                    playerData.get(currentPlayerName).wins =
-                            participants.getJSONObject(k).getInt("wins");
+
+                JSONObject thisWar = participants.getJSONObject(k);
+                String playerName = thisWar.getString("name");
+                String playerTag = thisWar.getString("tag");
+
+                int collectionDayBattlesPlayed = thisWar.getInt("collectionDayBattlesPlayed");
+                int cardsEarned = thisWar.getInt("cardsEarned");
+                int numberOfBattles = thisWar.getInt("numberOfBattles");
+                int battlesPlayed = thisWar.getInt("battlesPlayed");
+                int wins = thisWar.getInt("wins");
+
+                if (!playerData.containsKey(playerName)) {
+
+                    playerData.put(
+                            playerName,
+                            new Participant(
+                                    playerTag,
+                                    playerName,
+                                    collectionDayBattlesPlayed,
+                                    cardsEarned,
+                                    numberOfBattles,
+                                    battlesPlayed,
+                                    wins
+                            ));
                 } else {
-                    playerData.get(currentPlayerName).collectionDayBattlesPlayed +=
-                            participants.getJSONObject(k).getInt("collectionDayBattlesPlayed");
-                    playerData.get(currentPlayerName).cardsEarned +=
-                            participants.getJSONObject(k).getInt("cardsEarned");
-                    playerData.get(currentPlayerName).numberOfBattles +=
-                            participants.getJSONObject(k).getInt("numberOfBattles");
-                    playerData.get(currentPlayerName).battlesPlayed +=
-                            participants.getJSONObject(k).getInt("battlesPlayed");
-                    playerData.get(currentPlayerName).wins +=
-                            participants.getJSONObject(k).getInt("wins");
+                    playerData.get(playerName).collectionDayBattlesPlayed += collectionDayBattlesPlayed;
+                    playerData.get(playerName).cardsEarned += cardsEarned;
+                    playerData.get(playerName).numberOfBattles += numberOfBattles;
+                    playerData.get(playerName).battlesPlayed += battlesPlayed;
+                    playerData.get(playerName).wins += wins;
                 }
             }
         }
@@ -179,7 +192,9 @@ class Controller {
             assert members != null;
 
             for (int i = 0; i < members.length(); i++) {
-                int[] playerCards = getPlayerCardLevels(members.getJSONObject(i).getString("tag"));
+                JSONObject player = members.getJSONObject(i);
+                String playerTag = player.getString("tag");
+                int[] playerCards = getPlayerCardLevels(playerTag);
                 int cardsAtMax = playerCards[0];
                 int cardsAtLegendary = playerCards[1];
                 int cardsAtGold = playerCards[2];
@@ -192,9 +207,9 @@ class Controller {
                     totalCards += playerCards[count];
                 }
                 csvReport.append(String.join(",",
-                        members.getJSONObject(i).getString("tag"),
-                        members.getJSONObject(i).getString("name"),
-                        members.getJSONObject(i).getString("role"),
+                        playerTag,
+                        player.getString("name"),
+                        player.getString("role"),
                         Integer.toString(cardsAtMax),
                         Integer.toString(cardsAtLegendary),
                         Integer.toString(cardsAtGold),
@@ -241,19 +256,25 @@ class Controller {
             for (int i = 0; i < members.length(); i++) {
 
                 JSONObject clanMember = members.getJSONObject(i);
+
+                // This line is the culprit for slow load times on PDK report
                 JSONObject player = getPlayer(clanMember.getString("tag"));
 
-                String playerTag = player.getString("tag");
-                String playerName = player.getString("name");
-                String playerRole = player.getString("role");
+                String newPlayerTag = clanMember.getString("tag");
+                String newPlayerName = clanMember.getString("name");
+                String newPlayerRole = clanMember.getString("role");
 
-                int playerLevel = player.getInt("expLevel");
-                int playerTrophies = player.getInt("trophies");
-                int playerBestTrophies = player.getInt("bestTrophies");
-                int playerDonations = player.getInt("donations");
-                int playerDonationsReceived = player.getInt("donationsReceived");
-                int playerTotalDonations = player.getInt("totalDonations");
-                int playerWarDayWins = player.getInt("warDayWins");
+//                String playerTag = player.getString("tag");
+//                String playerName = player.getString("name");
+//                String playerRole = player.getString("role");
+
+                int playerLevel = clanMember.getInt("expLevel");
+                int playerTrophies = clanMember.getInt("trophies");
+                int playerBestTrophies = clanMember.getInt("bestTrophies");
+                int playerDonations = clanMember.getInt("donations");
+                int playerDonationsReceived = clanMember.getInt("donationsReceived");
+                int playerTotalDonations = clanMember.getInt("totalDonations");
+                int playerWarDayWins = clanMember.getInt("warDayWins");
 
                 String ratio;
 
@@ -265,13 +286,13 @@ class Controller {
                     ratio = "0";
                 }
 
-                int playerParticipation = getWarParticipation(playerTag, getWarLog(tag).getJSONArray("items"));
+                int playerParticipation = getWarParticipation(newPlayerTag, getWarLog(tag).getJSONArray("items"));
                 String participationRate = Math.round(((float) playerParticipation / 10) * 100) + "%";
 
                 csvReport.append(String.join(",",
-                        playerTag,
-                        playerName,
-                        playerRole,
+                        newPlayerTag,
+                        newPlayerName,
+                        newPlayerRole,
                         Integer.toString(playerLevel),
                         Integer.toString(playerTrophies),
                         Integer.toString(playerBestTrophies),
@@ -352,7 +373,7 @@ class Controller {
         return csv;
     }
 
-    public boolean loadCredentials() {
+    boolean loadCredentials() {
         try {
             String path = System.getProperty("user.home") + File.separator + "Desktop"
                     + File.separator + "RoyaleReport" + File.separator + "credentials.pref";
@@ -373,7 +394,7 @@ class Controller {
         return true;
     }
 
-    public void saveCredentials() {
+    void saveCredentials() {
         String path = System.getProperty("user.home") + File.separator + "Desktop"
                 + File.separator + "RoyaleReport" + File.separator + "credentials.pref";
         File file = new File(path);
