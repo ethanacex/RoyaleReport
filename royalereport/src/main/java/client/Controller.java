@@ -1,9 +1,10 @@
-package sample;
+package client;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -80,10 +81,10 @@ class Controller {
 
             private String tag;
             private String name;
-            private int collectionDayBattlesPlayed = 0;
+            private int collectionBattles = 0;
             private int cardsEarned = 0;
-            private int numberOfBattles = 0;
-            private int battlesPlayed = 0;
+            private int warBattles = 0;
+            private int warBattlesPlayed = 0;
             private int wins = 0;
 
             private Participant(String tag, String name) {
@@ -104,32 +105,18 @@ class Controller {
         for (int i = 0; i < wars.length; i++) {
             JSONArray participants = participantLists[i];
             for (int k = 0; k < participants.length(); k++) {
-                String currentPlayerName = participants.getJSONObject(k).getString("name");
-                String currentPlayerTag = participants.getJSONObject(k).getString("tag");
-                if (!playerData.containsKey(currentPlayerName)) {
-                    playerData.put(currentPlayerName, new Participant(currentPlayerTag, currentPlayerName));
-                    playerData.get(currentPlayerName).collectionDayBattlesPlayed =
-                            participants.getJSONObject(k).getInt("collectionDayBattlesPlayed");
-                    playerData.get(currentPlayerName).cardsEarned =
-                            participants.getJSONObject(k).getInt("cardsEarned");
-                    playerData.get(currentPlayerName).numberOfBattles =
-                            participants.getJSONObject(k).getInt("numberOfBattles");
-                    playerData.get(currentPlayerName).battlesPlayed =
-                            participants.getJSONObject(k).getInt("battlesPlayed");
-                    playerData.get(currentPlayerName).wins =
-                            participants.getJSONObject(k).getInt("wins");
-                } else {
-                    playerData.get(currentPlayerName).collectionDayBattlesPlayed +=
-                            participants.getJSONObject(k).getInt("collectionDayBattlesPlayed");
-                    playerData.get(currentPlayerName).cardsEarned +=
-                            participants.getJSONObject(k).getInt("cardsEarned");
-                    playerData.get(currentPlayerName).numberOfBattles +=
-                            participants.getJSONObject(k).getInt("numberOfBattles");
-                    playerData.get(currentPlayerName).battlesPlayed +=
-                            participants.getJSONObject(k).getInt("battlesPlayed");
-                    playerData.get(currentPlayerName).wins +=
-                            participants.getJSONObject(k).getInt("wins");
+                String playerName = participants.getJSONObject(k).getString("name");
+                String playerTag = participants.getJSONObject(k).getString("tag");
+                if (!playerData.containsKey(playerName)) {
+                    playerData.put(playerName, new Participant(playerTag, playerName));
                 }
+                Participant participantStats = playerData.get(playerName);
+                JSONObject participant = participants.getJSONObject(k);
+                participantStats.collectionBattles += participant.getInt("collectionDayBattlesPlayed");
+                participantStats.cardsEarned += participant.getInt("cardsEarned");
+                participantStats.warBattles += participant.getInt("numberOfBattles");
+                participantStats.warBattlesPlayed += participant.getInt("battlesPlayed");
+                participantStats.wins += participant.getInt("wins");
             }
         }
 
@@ -141,24 +128,24 @@ class Controller {
             for (Participant p : playerData.values()) {
 
                 csvReport.append(String.join(",", p.tag, p.name,
-                        Integer.toString(p.collectionDayBattlesPlayed),
+                        Integer.toString(p.collectionBattles),
                         Integer.toString(p.cardsEarned),
-                        Integer.toString(p.numberOfBattles),
-                        Integer.toString(p.battlesPlayed),
+                        Integer.toString(p.warBattles),
+                        Integer.toString(p.warBattlesPlayed),
                         Integer.toString(p.wins),
-                        Integer.toString(p.battlesPlayed - p.wins),
-                        Integer.toString(p.numberOfBattles - p.battlesPlayed),
-                        Math.round(((float) (p.wins) / (p.battlesPlayed)) * 100) + "%"
+                        Integer.toString(p.warBattlesPlayed - p.wins),
+                        Integer.toString(p.warBattles - p.warBattlesPlayed),
+                        Math.round(((float) (p.wins) / (p.warBattlesPlayed)) * 100) + "%"
 
                 ));
                 csvReport.append("\n");
             }
             csvReport.flush();
             csvReport.close();
-            alertOperationSuccess().showAndWait();
+            AlertStatus.alertOperationSuccess().showAndWait();
             locateFile();
         } catch (IOException e) {
-            alertWriteError().showAndWait();
+            AlertStatus.alertWriteError().showAndWait();
         }
     }
 
@@ -212,10 +199,10 @@ class Controller {
             }
             csvReport.flush();
             csvReport.close();
-            alertOperationSuccess().showAndWait();
+            AlertStatus.alertOperationSuccess().showAndWait();
             locateFile();
         } catch (IOException e) {
-            alertWriteError().showAndWait();
+            AlertStatus.alertWriteError().showAndWait();
         }
     }
 
@@ -287,10 +274,10 @@ class Controller {
             }
             csvReport.flush();
             csvReport.close();
-            alertOperationSuccess().showAndWait();
+            AlertStatus.alertOperationSuccess().showAndWait();
             locateFile();
         } catch (IOException e) {
-            alertWriteError().showAndWait();
+            AlertStatus.alertWriteError().showAndWait();
         }
     }
 
@@ -338,10 +325,10 @@ class Controller {
         try {
             boolean dirCreated = file.getParentFile().mkdirs();
             if (!dirCreated) {
-                alertOverwriteWarning().showAndWait();
+                AlertStatus.alertOverwriteWarning().showAndWait();
             }
         } catch (SecurityException e) {
-            alertDirectoryBuildError().showAndWait();
+            AlertStatus.alertDirectoryBuildError().showAndWait();
         }
         FileWriter csv = new FileWriter(file);
         for (String header : columns) {
@@ -366,10 +353,10 @@ class Controller {
             token = lines[1];
         }
         catch(IOException e) {
-            alertNotFoundError().showAndWait();
+            AlertStatus.alertNotFoundError().showAndWait();
             return false;
         }
-        alertLoadSuccess().showAndWait();
+        AlertStatus.alertLoadSuccess().showAndWait();
         return true;
     }
 
@@ -380,10 +367,10 @@ class Controller {
         try {
             boolean dirCreated = file.getParentFile().mkdirs();
             if (!dirCreated) {
-                alertOverwriteWarning().showAndWait();
+                AlertStatus.alertOverwriteWarning().showAndWait();
             }
         } catch (SecurityException e) {
-            alertDirectoryBuildError().showAndWait();
+            AlertStatus.alertDirectoryBuildError().showAndWait();
             return;
         }
         List<String> lines = Arrays.asList(ip, token);
@@ -391,10 +378,10 @@ class Controller {
         try {
             Files.write(save, lines, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            alertWriteError().showAndWait();
+            AlertStatus.alertWriteError().showAndWait();
             return;
         }
-        alertCredentialsSaved().showAndWait();
+        AlertStatus.alertCredentialsSaved().showAndWait();
     }
 
     private JSONObject getClan(String clanTag) throws UnirestException {
@@ -412,79 +399,13 @@ class Controller {
         return new JSONObject(response.getBody());
     }
 
-    private Alert alertOperationSuccess() {
-        return createAlert(Alert.AlertType.INFORMATION, "Success", "Operation completed successfully.");
-    }
-
-    private Alert alertLoadSuccess() {
-        return createAlert(Alert.AlertType.INFORMATION, "Success", "Credentials loaded successfully.");
-    }
-
-    private Alert alertNotFoundError() {
-        return createAlert(Alert.AlertType.WARNING,"Error", "No default credentials found.");
-    }
-
-    private Alert alertWriteError() {
-        return createAlert(Alert.AlertType.WARNING,"Error", "Write failure, file may be in use.");
-    }
-
-    private Alert alertDirectoryBuildError() {
-        return createAlert(Alert.AlertType.WARNING,"Error",
-                "Failed to create directory, please check write permissions.");
-    }
-
-    private Alert alertOverwriteWarning() {
-        return createAlert(Alert.AlertType.INFORMATION, "Warning",
-                "Files in output path with the same name will be overwritten.");
-    }
-
-    private Alert createAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setContentText(content);
-        alert.setHeaderText(null);
-        alert.setTitle(title);
-        return alert;
-    }
-
-    private Alert alertCredentialsSaved() {
-        return createAlert(Alert.AlertType.INFORMATION, "Authorisation Updated",
-                "Security clearance changed, new IP and authorisation saved.");
-    }
-
-    Alert alertInputError() {
-        return createAlert(Alert.AlertType.INFORMATION, "Input required", "Text field must not be empty");
-    }
-
-    Alert alertFatalError() {
-        return createAlert(Alert.AlertType.WARNING, "Error",
-                "A fatal error occurred. Please check your connection and access privileges.");
-    }
-
-    Alert alertServerError() {
-        return createAlert(Alert.AlertType.WARNING, "Error",
-                "Could not fetch information from server.");
-    }
-
-    Alert alertResourceError() {
-        return(createAlert(Alert.AlertType.WARNING, "Error",
-                "Icon resource could not be loaded."));
-    }
-
-    Alert alertAdminWarning() {
-        return(createAlert(Alert.AlertType.WARNING, "Admin",
-                "You have activated the admin panel, you will need:\n\n" +
-                        "Your Public IP Address\n" +
-                        "Your Authorisation Token\n\n" +
-                        "Press OK to continue"));
-    }
-
     private void locateFile() {
         if (isWindows()) {
             try {
                 String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
                 Desktop.getDesktop().open(new File(path));
             } catch (IOException e) {
-                alertDirectoryBuildError().showAndWait();
+                AlertStatus.alertOperationSuccess().showAndWait();
             }
 
         } else if (isMac()) {
@@ -492,7 +413,7 @@ class Controller {
                 String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
                 Runtime.getRuntime().exec("open " + path);
             } catch (IOException e) {
-                alertDirectoryBuildError().showAndWait();
+                AlertStatus.alertDirectoryBuildError().showAndWait();
             }
 
         }
@@ -508,12 +429,36 @@ class Controller {
         return (os.contains("mac"));
     }
 
-//    private String dateFormatter(String input) {
-//        String date = input.substring(0,8);
-//        String year = date.substring(0,4);
-//        String month = date.substring(4,6);
-//        String day = date.substring(6,8);
-//        return day + "/" + month + "/" + year;
-//    }
+    public boolean authenticate(TextField ipTextField, TextField authTextField) {
+        if (ipTextField.getText().isEmpty() || authTextField.getText().isEmpty()) {
+            AlertStatus.alertInputError().showAndWait();
+            return false;
+        } else {
+            setIp(ipTextField.getText().trim());
+            setToken("Bearer " + authTextField.getText().trim());
+            return true;
+        }
+    }
 
+    public boolean unlockAdmin(TextField txtField, ComboBox<String> dropDown) {
+        boolean admin = false;
+        if (!txtField.getText().isEmpty()) {
+            if (txtField.getText().equals("admin")) {
+                AlertStatus.alertAdminWarning().showAndWait();
+                admin = true;
+            } else {
+                try {
+                    buttonHandler(txtField.getText(), dropDown.getValue());
+                } catch (UnirestException ex) {
+                    AlertStatus.alertServerError().showAndWait();
+                } catch (Exception ex) {
+                    AlertStatus.alertFatalError().showAndWait();
+                }
+            }
+        }
+        else {
+            AlertStatus.alertInputError().showAndWait();
+        }
+        return admin;
+    }
 }

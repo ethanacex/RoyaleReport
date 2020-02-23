@@ -1,6 +1,5 @@
-package sample;
+package client;
 
-import com.mashape.unirest.http.exceptions.UnirestException;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -18,6 +17,8 @@ class View {
     private Controller controller = new Controller();
 
     void initialise(Stage window) {
+
+        // region UI Initalization
 
         // Menu bar and items //
         MenuBar menuBar = new MenuBar();
@@ -41,7 +42,7 @@ class View {
         VBox clanBox = new VBox(5, clan, txtField);
 
         // Report Type ComboBox //
-        ComboBox<String> dropDown = new ComboBox<String>();
+        ComboBox<String> dropDown = new ComboBox<>();
         dropDown.getItems().addAll("War Performance", "War Readiness", "PDK Report");
         dropDown.getSelectionModel().selectFirst();
         Label report = new Label("Report Type:");
@@ -74,7 +75,7 @@ class View {
             Image icon = new Image(String.valueOf(this.getClass().getClassLoader().getResource("crown.png")));
             window.getIcons().add(icon);
         } catch(Exception e) {
-            controller.alertResourceError().showAndWait();
+            AlertStatus.alertResourceError().showAndWait();
         }
 
         // Attempt to load default data //
@@ -91,9 +92,12 @@ class View {
         txtField.setMinWidth(window.getMaxWidth()-20);
 
         window.show();
+        //endregion
     }
 
-    private void displayAdminPanel() {
+    public void displayAdminPanel() {
+
+        // region Admin Panel Initilization
 
         // Create Stage //
         Stage window = new Stage();
@@ -138,21 +142,12 @@ class View {
             }
         });
 
-/*        root.setOnKeyPressed(keyEvent -> {
-            if (keyEvent.getCode() == KeyCode.ENTER)  {
-                if (authenticate(ipTextField, authTextField)) {
-                    controller.alertCredentialsSaved().showAndWait();
-                    window.close();
-                }
-            }
-        });*/
-
         // Applying Window Icon //
         try {
             Image icon = new Image(String.valueOf(this.getClass().getClassLoader().getResource("admin.png")));
             window.getIcons().add(icon);
         } catch(Exception e) {
-            controller.alertResourceError().showAndWait();
+            AlertStatus.alertResourceError().showAndWait();
         }
 
         // Window Properties //
@@ -166,37 +161,16 @@ class View {
         authTextField.setMinWidth(window.getMaxWidth()-20);
 
         window.show();
+        //endregion
     }
 
     private boolean authenticate(TextField ipTextField, TextField authTextField) {
-        if (ipTextField.getText().isEmpty() || authTextField.getText().isEmpty()) {
-            controller.alertInputError().showAndWait();
-            return false;
-        } else {
-            controller.setIp(ipTextField.getText().trim());
-            controller.setToken("Bearer " + authTextField.getText().trim());
-            return true;
-        }
-
+        return controller.authenticate(ipTextField, authTextField);
     }
 
     private void buttonAction(TextField txtField, ComboBox<String> dropDown) {
-        if (!txtField.getText().isEmpty()) {
-            if (txtField.getText().equals("admin")) {
-                controller.alertAdminWarning().showAndWait();
-                displayAdminPanel();
-            } else {
-                try {
-                    controller.buttonHandler(txtField.getText(), dropDown.getValue());
-                } catch (UnirestException ex) {
-                    controller.alertServerError().showAndWait();
-                } catch (Exception ex) {
-                    controller.alertFatalError().showAndWait();
-                }
-            }
-        }
-        else {
-            controller.alertInputError().showAndWait();
+        if (controller.unlockAdmin(txtField, dropDown)) {
+            displayAdminPanel();
         }
     }
 
