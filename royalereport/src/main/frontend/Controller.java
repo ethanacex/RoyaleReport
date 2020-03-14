@@ -4,8 +4,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import main.client.Model;
 
-import java.io.IOException;
-
 public class Controller {
 
     @FXML private Label ipLabel;
@@ -35,10 +33,10 @@ public class Controller {
 
     @FXML
     private void load() {
-//        model.loadDatabase();
-//        ipTextField.setText(model.getSavedIP());
-//        authTokenField.setText(model.getSavedToken());
-//        favourites.getItems().addAll(model.getFavourites());
+        model.loadDatabase();
+        ipTextField.setText(model.getSavedIP());
+        authTokenField.setText(model.getSavedToken());
+        favourites.getItems().addAll(model.getFavourites());
     }
 
     @FXML

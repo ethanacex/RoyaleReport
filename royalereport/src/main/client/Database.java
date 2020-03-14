@@ -18,10 +18,6 @@ class Database implements Serializable {
         return token;
     }
 
-    public String getFavourite(int i) {
-        return favourites.get(i);
-    }
-
     public ArrayList<String> getFavourites() {
         return favourites;
     }
@@ -34,11 +30,7 @@ class Database implements Serializable {
         this.token = token;
     }
 
-    public void setFavourite(String favourite) {
-        favourites.add(favourite);
-    }
-
     public void setFavourites(List<String> favourites) {
-        this.favourites = (ArrayList<String>) favourites;
+        this.favourites = new ArrayList<>(favourites);
     }
 }

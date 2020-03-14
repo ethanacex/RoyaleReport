@@ -7,10 +7,12 @@ import org.json.JSONObject;
 
 class Web {
 
-    private Database database;
+    private String ip;
+    private String token;
 
     public Web(Database db) {
-        this.database = db;
+        this.ip = db.getIp();
+        this.token = "Bearer " + db.getToken();
     }
 
     protected HttpResponse<String> requestFromServer(String group, String tag, String subGroup) throws UnirestException {
@@ -22,8 +24,8 @@ class Web {
                 .routeParam("group", group)
                 .routeParam("tag", tag)
                 .routeParam("subGroup", subGroup)
-                .routeParam("address", database.getIp())
-                .header("Authorization", database.getToken())
+                .routeParam("address", ip)
+                .header("Authorization", token)
                 .header("Accept", "*/*")
                 .header("Cache-Control", "no-cache")
                 .header("Host", "api.clashroyale.com")

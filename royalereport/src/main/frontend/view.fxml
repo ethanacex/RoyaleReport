@@ -39,7 +39,7 @@
                                                 <Insets bottom="10.0" />
                                             </VBox.margin>
                                         </TextField>
-                                        <ComboBox prefWidth="200.0" promptText="Report Type" fx:id="dropDown">
+                                        <ComboBox prefWidth="200.0" fx:id="dropDown">
                                             <VBox.margin>
                                                 <Insets bottom="10.0"/>
                                             </VBox.margin>
@@ -50,6 +50,9 @@
                                                     <String fx:value="PDK Report"/>
                                                 </FXCollections>
                                             </items>
+                                            <value>
+                                                <String fx:value="War Performance"/>
+                                            </value>
                                         </ComboBox>
                                         <HBox>
                                             <children>

@@ -7,21 +7,17 @@ import org.json.JSONObject;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
 public class Model {
 
+    private Web web;
     private Database storage = new Database();
-    private final Web web = new Web(storage);
-    private final String USER_PATH = System.getProperty("user.home") + File.separator + "Desktop"
-            + File.separator + "RoyaleReport" + File.separator + "save.db";
 
+    private final String USER_PATH = System.getProperty("user.home") + File.separator + "Desktop"
+            + File.separator + "RoyaleReport" + File.separator;
 
     public void downloadReport(String tag, String reportType) {
         try {
@@ -33,12 +29,13 @@ public class Model {
                     default: break;
                 }
             } else {
-                UserNotify.error("Text field must not be empty");
+                Prompt.error("You must specify a clan").showAndWait();
             }
-        } catch (UnirestException e) {
-            UserNotify.error("Could not fetch information from server.");
+        } catch (UnirestException ex) {
+            Prompt.error("Could not fetch information from server.").showAndWait();
+        } catch (Exception ex) {
+            Prompt.error("Please check input, internet connection and authorization.").showAndWait();
         }
-
     }
 
     private void buildPerformanceReport(String tag) throws UnirestException {
@@ -99,7 +96,7 @@ public class Model {
 
         try {
             // Build or overwrite existing file //
-            FileWriter csvReport = dirBuilder("warPerformanceReport.csv", columns);
+            FileWriter csvReport = csvBuilder("warPerformanceReport.csv", columns);
 
             for (Participant p : playerData.values()) {
 
@@ -118,10 +115,10 @@ public class Model {
             }
             csvReport.flush();
             csvReport.close();
-            UserNotify.alertOperationSuccess().showAndWait();
+            Prompt.success("Operation completed successfully").showAndWait();
             locateFile();
         } catch (IOException e) {
-            UserNotify.alertWriteError().showAndWait();
+            Prompt.error("Write failure, file may be in use.").showAndWait();
         }
     }
 
@@ -133,7 +130,7 @@ public class Model {
 
         try {
             // Build or overwrite existing file //
-            FileWriter csvReport = dirBuilder("cardReport.csv", columns);
+            FileWriter csvReport = csvBuilder("cardReport.csv", columns);
 
             // List of clan members //
             JSONArray members = web.getClan(tag).getJSONArray("memberList");
@@ -175,10 +172,10 @@ public class Model {
             }
             csvReport.flush();
             csvReport.close();
-            UserNotify.alertOperationSuccess().showAndWait();
+            Prompt.success("Report generated successfully").showAndWait();
             locateFile();
         } catch (IOException e) {
-            UserNotify.alertWriteError().showAndWait();
+            Prompt.error("Write failure, file may be in use.").showAndWait();
         }
     }
 
@@ -192,7 +189,7 @@ public class Model {
 
         try {
             // Build or overwrite existing file //
-            FileWriter csvReport = dirBuilder("pdkReport.csv", columns);
+            FileWriter csvReport = csvBuilder("pdkReport.csv", columns);
 
             // List of clan members //
 
@@ -250,10 +247,10 @@ public class Model {
             }
             csvReport.flush();
             csvReport.close();
-            UserNotify.alertOperationSuccess().showAndWait();
+            Prompt.success("Report generated successfully").showAndWait();
             locateFile();
         } catch (IOException e) {
-            UserNotify.alertWriteError().showAndWait();
+            Prompt.error("Write failure, file may be in use.").showAndWait();
         }
     }
 
@@ -295,17 +292,9 @@ public class Model {
         return new int[] {maxed, legendary, gold, silver, bronze, low};
     }
 
-    private FileWriter dirBuilder(String fileName, String[] columns) throws IOException {
-        String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
-        File file = new File(path, fileName);
-        try {
-            boolean dirCreated = file.getParentFile().mkdirs();
-            if (!dirCreated) {
-                UserNotify.alertOverwriteWarning().showAndWait();
-            }
-        } catch (SecurityException e) {
-            UserNotify.alertDirectoryBuildError().showAndWait();
-        }
+    private FileWriter csvBuilder(String fileName, String[] columns) throws IOException {
+        createDirectory();
+        File file = new File(USER_PATH, fileName);
         FileWriter csv = new FileWriter(file);
         for (String header : columns) {
             csv.append(header);
@@ -315,126 +304,20 @@ public class Model {
         return csv;
     }
 
-//    public boolean loadUserData() {
-//        try {
-//            BufferedReader in = new BufferedReader(new FileReader(USER_PATH));
-//            ArrayList<String> lines = new ArrayList<>();
-//            while (in.readLine() != null) {
-//                lines.add(in.readLine());
-//            }
-//            storage.setIp(lines.get(0));
-//            storage.setToken(lines.get(1));
-//            for (int i = 2; i < lines.size(); i++) {
-//                storage.setFavourite(lines.get(i));
-//            }
-//        }
-//        catch(IOException e) {
-//            UserNotify.alertNotFoundError().showAndWait();
-//            return false;
-//        }
-//        UserNotify.alertLoadSuccess().showAndWait();
-//        return true;
-//    }
-//
-//    public void saveCredentials() {
-//        File file = new File(USER_PATH);
-//        try {
-//            boolean dirCreated = file.getParentFile().mkdirs();
-//            if (!dirCreated) {
-//                UserNotify.alertOverwriteWarning().showAndWait();
-//            }
-//        } catch (SecurityException e) {
-//            UserNotify.alertDirectoryBuildError().showAndWait();
-//            return;
-//        }
-//        List<String> lines = Arrays.asList(storage.getIp(), storage.getToken());
-//        Path save = Paths.get(USER_PATH);
-//        try {
-//            Files.write(save, lines, StandardCharsets.UTF_8);
-//        } catch (IOException e) {
-//            UserNotify.alertWriteError().showAndWait();
-//            return;
-//        }
-//        UserNotify.alertCredentialsSaved().showAndWait();
-//    }
-
-    public void saveDatabase() {
-
-        try {
-            FileOutputStream outputStream = new FileOutputStream(USER_PATH);
-            ObjectOutputStream serializer = new ObjectOutputStream(outputStream);
-            serializer.writeObject(storage);
-            serializer.close();
-        } catch (Exception e) {
-            UserNotify.error("An error occurred, file may be in use or you may not have write permissions.");
-        }
-
-    }
-
-    public void loadDatabase() {
-        try {
-            FileInputStream inputStream = new FileInputStream(USER_PATH);
-            ObjectInputStream serializer = new ObjectInputStream(inputStream);
-
-            Object object = serializer.readObject();
-            serializer.close();
-            storage = (Database) object;
-        } catch (Exception e) {
-            UserNotify.warning("No default credentials found.");
-        }
-    }
-
     private void locateFile() {
-        if (isWindows()) {
-            try {
-                String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
-                Desktop.getDesktop().open(new File(path));
-            } catch (IOException e) {
-                UserNotify.alertOperationSuccess().showAndWait();
+        try {
+            if (isWindows()) {
+                Desktop.getDesktop().open(new File(USER_PATH));
+            } else if (isMac()) {
+                Runtime.getRuntime().exec("open " + USER_PATH);
             }
-
-        } else if (isMac()) {
-            try {
-                String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
-                Runtime.getRuntime().exec("open " + path);
-            } catch (IOException e) {
-                UserNotify.alertDirectoryBuildError().showAndWait();
-            }
-
+        } catch (IOException e) {
+            Prompt.error("Could not locate output file").showAndWait();
         }
-    }
-
-    private boolean isWindows() {
-        String os = System.getProperty("os.name").toLowerCase();
-        return (os.contains("win"));
-    }
-
-    private boolean isMac() {
-        String os = System.getProperty("os.name").toLowerCase();
-        return (os.contains("mac"));
-    }
-
-    private boolean isValid(String text) {
-        if (text.isEmpty()) {
-            UserNotify.alertInputError().showAndWait();
-            return false;
-        }
-        return true;
     }
 
     public List<String> getFavourites() {
         return storage.getFavourites();
-    }
-
-    public String getPublicIP() {
-        try {
-            URL url = new URL("http://checkip.amazonaws.com");
-            BufferedReader ip = new BufferedReader(new InputStreamReader(url.openStream()));
-            return ip.readLine().trim();
-        } catch (IOException e) {
-            UserNotify.error("Public IP address not found. Please check your internet connection");
-        }
-        return "Unknown";
     }
 
     public String getSavedIP() {
@@ -445,16 +328,79 @@ public class Model {
         return storage.getToken();
     }
 
+    public String getPublicIP() {
+        try {
+            URL url = new URL("http://checkip.amazonaws.com");
+            BufferedReader ip = new BufferedReader(new InputStreamReader(url.openStream()));
+            return ip.readLine().trim();
+        } catch (IOException e) {
+            Prompt.error("Public IP address not found. Please check your internet connection").showAndWait();
+        }
+        return "Unknown";
+    }
+
+    private void createDirectory() {
+        try {
+            new File(USER_PATH).mkdirs();
+        } catch (SecurityException e) {
+            Prompt.error("Failed to create directory, please check write permissions.").showAndWait();
+        }
+    }
+
     public void saveUserData(String ip, String token, List<String> favourites) {
         if (isValid(ip) && isValid(token)) {
             storage.setIp(ip);
-            storage.setToken("Bearer " + token);
+            storage.setToken(token);
             storage.setFavourites(favourites);
             saveDatabase();
-            UserNotify.success("Credentials saved.").showAndWait();
+            web = new Web(storage);
         } else {
-            UserNotify.error("Text field must not be empty").showAndWait();
+            Prompt.error("Authorization fields cannot be empty").showAndWait();
         }
+    }
+
+    private void saveDatabase() {
+        createDirectory();
+        try {
+            FileOutputStream outputStream = new FileOutputStream(USER_PATH + "save.cdb");
+            ObjectOutputStream serializer = new ObjectOutputStream(outputStream);
+            serializer.writeObject(storage);
+            serializer.close();
+            Prompt.success("Credentials saved.").showAndWait();
+        } catch (Exception e) {
+            Prompt.error("An error occurred, file may be in use or you may not have write permissions.").showAndWait();
+        }
+    }
+
+    public void loadDatabase() {
+        try {
+            FileInputStream inputStream = new FileInputStream(USER_PATH + "save.cdb");
+            ObjectInputStream serializer = new ObjectInputStream(inputStream);
+            Object object = serializer.readObject();
+            serializer.close();
+            storage = (Database) object;
+            Prompt.success("Save data loaded successfully").showAndWait();
+        } catch (Exception e) {
+            Prompt.warning("No previous save data found.").showAndWait();
+        }
+        if (storage.getFavourites() == null) {
+            storage.setFavourites(new ArrayList<>());
+        }
+        web = new Web(storage);
+    }
+
+    private boolean isValid(String text) {
+        return !text.isEmpty();
+    }
+
+    private boolean isWindows() {
+        String os = System.getProperty("os.name").toLowerCase();
+        return (os.contains("win"));
+    }
+
+    private boolean isMac() {
+        String os = System.getProperty("os.name").toLowerCase();
+        return (os.contains("mac"));
     }
 
 }

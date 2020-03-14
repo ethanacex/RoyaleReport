@@ -7,7 +7,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import main.client.UserNotify;
+import main.client.Prompt;
 
 import java.io.IOException;
 
@@ -29,7 +29,7 @@ public class Main extends Application {
         try {
             window.getIcons().add(new Image(Main.class.getResourceAsStream("../resources/crown.png")));
         } catch(Exception e) {
-            UserNotify.alertResourceError().showAndWait();
+            Prompt.error("Icon resource could not be loaded.").showAndWait();
         }
 
         window.show();
