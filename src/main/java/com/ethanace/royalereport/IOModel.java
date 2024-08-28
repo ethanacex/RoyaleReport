@@ -15,7 +15,7 @@ import javafx.collections.ObservableList;
 
 public class IOModel {
     
-    private final String SAVE_DIR = "save.properties";
+    private final String SAVE_DIR = getClass().getResource("save.properties").getPath();
     
     private final List<String> favourites;
     private String authToken;
@@ -26,10 +26,15 @@ public class IOModel {
         loadFromFile();
     }
 
+    private boolean isValidInput(String input) {
+        return input != null && !input.isBlank();
+    }
+
     private void loadFromFile() {
         Properties properties = new Properties();
         
         try (FileInputStream in = new FileInputStream(SAVE_DIR)) {
+            System.out.println(SAVE_DIR);
             properties.load(in);
             authToken = properties.getProperty("auth");
             localIp = properties.getProperty("ip");
@@ -55,21 +60,24 @@ public class IOModel {
         return favourites;
     }
 
-    public void writeToFile(ObservableList selectedItems, String ip, String auth) {
+    public void writeToFile(ObservableList<String> selectedItems, String ip, String auth) {
+
         Properties properties = new Properties();
-        properties.setProperty("ip", ip);
-        properties.setProperty("auth", auth);
+
+        properties.setProperty("ip", isValidInput(ip) ? ip : "");
+        properties.setProperty("auth", isValidInput(auth) ? auth : "");
         
         int index = 0;
         for (Object selectedItem : selectedItems) {
             index++;
             properties.setProperty(Integer.toString(index), selectedItem.toString());
         }
-        
+
         try (FileOutputStream out = new FileOutputStream(SAVE_DIR)) {
             properties.store(out, "Favourites");
             System.out.println("Data written to properties file successfully.");
         } catch (IOException e) {
+            System.out.println("IO Error");
             //TODO: Alert failure
         }
     }
