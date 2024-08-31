@@ -31,6 +31,7 @@ public class NetModel {
             publicIP = in.readLine();
             in.close();
 
+            //TODO: Alert
         } catch (MalformedURLException e) {
             System.err.println("The URL is malformed: " + e.getMessage());
         } catch (UnknownHostException e) {
