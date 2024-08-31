@@ -1,5 +1,6 @@
 package com.ethanace.royalereport;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -18,11 +19,18 @@ public class ReportModel {
 
     public boolean buildPerformanceReport(String tag, String token) {
 
-        String[] columnHeaders = {"Tag", "Name", "Participation Rate"};
+        //String[] columnHeaders = {"Tag", "Name", "Participation Rate"};
         String template = "https://api.clashroyale.com/v1/clans/%s/riverracelog";
         String url = String.format(template, tag.replace("#", "%23"));
         JSONObject response = new JSONObject(netModel.HTTPGet(url, token));
-        System.out.println(response.toString());
+        JSONArray items = response.getJSONArray("items");
+        JSONArray standings = items.getJSONObject(0).getJSONArray("standings");
+
+        for (int i = 0; i < standings.length(); i++) {
+            JSONObject standing = standings.getJSONObject(i);
+            JSONObject clan = standing.getJSONObject("clan");
+            System.out.println(clan.get("name"));
+        }
         
 
         return false;
