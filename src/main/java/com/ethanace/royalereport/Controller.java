@@ -1,5 +1,8 @@
 package com.ethanace.royalereport;
 
+import com.ethanace.royalereport.NetModel.NetworkException;
+
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -8,6 +11,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -76,7 +81,7 @@ public class Controller implements Initializable {
     
     @FXML
     private void savePreferences() {
-        ioModel.writeToFile(favouritesList.getItems(), ipField.getText(), authField.getText());
+        ioModel.saveToProperties(favouritesList.getItems(), ipField.getText(), authField.getText());
     }
     
     @FXML
@@ -93,36 +98,59 @@ public class Controller implements Initializable {
         try {
             clanTagField.setText(favouritesList.getSelectionModel().getSelectedItem());
         } catch (Exception e) {
-            // TODO: create an alert window
-            System.out.println("Make a valid selection");
+            alertUser(AlertType.ERROR, "Make a valid selection");
         }
     }
     
     @FXML
     private void buildReport() {
-        Report reportType = reportList.getSelectionModel().getSelectedItem();
-        ReportModel reportModel = new ReportModel();
-        boolean successful = false;
-        switch (reportType) {
-            case Report.WAR_PERFORMANCE -> {
-                System.out.println(reportType);
-                successful = reportModel.buildPerformanceReport(clanTagField.getText(), authField.getText());
+        try {
+
+            Report reportType = reportList.getSelectionModel().getSelectedItem();
+            ReportModel reportModel = new ReportModel();
+            String clan = clanTagField.getText();
+            String auth = authField.getText();
+
+            switch (reportType) {
+                case Report.WAR_PERFORMANCE -> reportModel.buildPerformanceReport(clan, auth);
+                case Report.WAR_READINESS -> System.out.println(reportType);
+                case Report.PDK -> System.out.println(reportType);
+                default -> throw new IOException("Unknown report type");
             }
-            case Report.WAR_READINESS -> System.out.println(reportType);
-            case Report.PDK -> System.out.println(reportType);
-            default -> System.out.println("Error"); //TODO: Alert error
+
+        } catch (IOException e) {
+            alertUser(AlertType.ERROR, e.getMessage());
         }
-        if (successful) {
-            // Alert success
+    }
+
+    public void alertUser(AlertType type, String message) {
+
+        Alert alert = new Alert(type);
+
+        if (type == AlertType.ERROR) {
+            alert.setTitle("Error");
+            alert.setHeaderText("An error occurred");
         } else {
-            // Alert failure
+            alert.setTitle("Notification");
+            alert.setHeaderText("Information");
         }
+        
+        alert.setContentText(message);
+        alert.showAndWait();
+
     }
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+
+        try {
+            ioModel = new IOModel(() -> {
+                alertUser(AlertType.INFORMATION, "Load was successful");
+            });
+        } catch (IOException e) {
+            alertUser(AlertType.ERROR, e.getMessage());
+        }
         
-        ioModel = new IOModel();
         netModel = new NetModel();
         
         loadPreferences();
@@ -136,6 +164,10 @@ public class Controller implements Initializable {
         reportList.setItems(items);
         reportList.getSelectionModel().selectFirst();
         
-        ipLabel.setText(netModel.getPublicIPAddress());
+        try {
+            ipLabel.setText(netModel.getPublicIPAddress());
+        } catch (NetworkException e) {
+            alertUser(AlertType.ERROR, e.getMessage());
+        }
     }    
 }

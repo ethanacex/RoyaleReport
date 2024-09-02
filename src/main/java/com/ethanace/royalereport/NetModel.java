@@ -15,8 +15,14 @@ import java.net.UnknownHostException;
 
 public class NetModel {
 
+    public class NetworkException extends Exception {
+        public NetworkException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
     @SuppressWarnings("deprecation")
-    public String getPublicIPAddress() {
+    public String getPublicIPAddress() throws NetworkException {
 
         String publicIP = "Undetermined";
 
@@ -31,15 +37,14 @@ public class NetModel {
             publicIP = in.readLine();
             in.close();
 
-            //TODO: Alert
         } catch (MalformedURLException e) {
-            System.err.println("The URL is malformed: " + e.getMessage());
+            throw new NetworkException("The URL is malformed: ", e);
         } catch (UnknownHostException e) {
-            System.err.println("The host could not be determined: " + e.getMessage());
+            throw new NetworkException("The host could not be determined: ", e);
         } catch (SocketTimeoutException e) {
-            System.err.println("Connection timed out: " + e.getMessage());
+            throw new NetworkException("Connection timed out: ", e);
         } catch (IOException e) {
-            System.err.println("An I/O error occurred: " + e.getMessage());
+            throw new NetworkException("An error occurred on connection InputStream: ", e);
         }
         return publicIP;
     }
