@@ -1,7 +1,5 @@
 package com.ethanace.royalereport;
 
-import com.ethanace.royalereport.NetModel.NetworkException;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -41,8 +39,8 @@ public class Controller implements Initializable {
     private NetModel netModel;
     
     public enum Report {
-        WAR_PERFORMANCE("War Performance", 1),
-        WAR_READINESS("War Readiness", 2),
+        CLAN_PERFORMANCE("Clan Performance", 1),
+        PLAYER_PERFORMANCE("Player Performance", 2),
         PDK("PDK Report", 3);
     
         private final String displayText;
@@ -81,7 +79,11 @@ public class Controller implements Initializable {
     
     @FXML
     private void savePreferences() {
-        ioModel.saveToProperties(favouritesList.getItems(), ipField.getText(), authField.getText());
+        try {
+            ioModel.saveToProperties(favouritesList.getItems(), ipField.getText(), authField.getText());
+        } catch (IOException e) {
+            alertUser(AlertType.ERROR, e.getMessage());
+        }
     }
     
     @FXML
@@ -112,13 +114,13 @@ public class Controller implements Initializable {
             String auth = authField.getText();
 
             switch (reportType) {
-                case Report.WAR_PERFORMANCE -> reportModel.buildPerformanceReport(clan, auth);
-                case Report.WAR_READINESS -> System.out.println(reportType);
+                case Report.CLAN_PERFORMANCE -> reportModel.buildPerformanceReport(clan, auth);
+                case Report.PLAYER_PERFORMANCE -> System.out.println(reportType);
                 case Report.PDK -> System.out.println(reportType);
-                default -> throw new IOException("Unknown report type");
+                default -> throw new Exception("Unknown report type");
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             alertUser(AlertType.ERROR, e.getMessage());
         }
     }
@@ -144,20 +146,20 @@ public class Controller implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
 
         try {
-            ioModel = new IOModel(() -> {
-                alertUser(AlertType.INFORMATION, "Load was successful");
-            });
+            ioModel = new IOModel();
+            System.out.println("ioModel init successful");
         } catch (IOException e) {
             alertUser(AlertType.ERROR, e.getMessage());
         }
-        
         netModel = new NetModel();
+        System.out.println("netModel init successful");
         
         loadPreferences();
+        System.out.println("load preferences successful");
         
         ObservableList<Report> items = FXCollections.observableArrayList(
-                Report.WAR_PERFORMANCE,
-                Report.WAR_READINESS,
+                Report.CLAN_PERFORMANCE,
+                Report.PLAYER_PERFORMANCE,
                 Report.PDK
         );
         
@@ -166,7 +168,8 @@ public class Controller implements Initializable {
         
         try {
             ipLabel.setText(netModel.getPublicIPAddress());
-        } catch (NetworkException e) {
+            System.out.println("get public IP successful");
+        } catch (Exception e) {
             alertUser(AlertType.ERROR, e.getMessage());
         }
     }    

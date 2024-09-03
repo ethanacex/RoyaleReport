@@ -15,14 +15,8 @@ import java.net.UnknownHostException;
 
 public class NetModel {
 
-    public class NetworkException extends Exception {
-        public NetworkException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-
     @SuppressWarnings("deprecation")
-    public String getPublicIPAddress() throws NetworkException {
+    public String getPublicIPAddress() throws Exception {
 
         String publicIP = "Undetermined";
 
@@ -38,19 +32,19 @@ public class NetModel {
             in.close();
 
         } catch (MalformedURLException e) {
-            throw new NetworkException("The URL is malformed: ", e);
+            throw new Exception("The URL is malformed: ", e);
         } catch (UnknownHostException e) {
-            throw new NetworkException("The host could not be determined: ", e);
+            throw new Exception("The host could not be determined: ", e);
         } catch (SocketTimeoutException e) {
-            throw new NetworkException("Connection timed out: ", e);
+            throw new Exception("Connection timed out: ", e);
         } catch (IOException e) {
-            throw new NetworkException("An error occurred on connection InputStream: ", e);
+            throw new Exception("An error occurred on connection InputStream: ", e);
         }
         return publicIP;
     }
 
     @SuppressWarnings("deprecation")
-    public String HTTPGet(String url, String token) {
+    public String HTTPGet(String url, String token) throws Exception {
         try {
 
             URL obj = new URL(url);
@@ -75,17 +69,16 @@ public class NetModel {
                 return "";
             }
         } catch (MalformedURLException e) {
-            // TODO: Alert MalformedURLException
+            throw new Exception("HTTPGet URL is malformed", e);
         } catch (ProtocolException e) {
-            // TODO: AlertProtocolException
+            throw new Exception("HTTPGet encountered protocol error", e);
         } catch (IOException e) {
-            // TODO: AlertIOException
+            throw new Exception("Error when retrieving data from HTTP input stream", e);
         } catch (SecurityException e) {
-            // TODO: AlertSecurityException
+            throw new Exception("A security error occurred during HTTPGet", e);
         } catch (Exception e) {
-            // TODO: Alert general Exception
+            throw new Exception("HTTPGet unknown error occurred", e);
         }
-        return "";
     }
 
 }

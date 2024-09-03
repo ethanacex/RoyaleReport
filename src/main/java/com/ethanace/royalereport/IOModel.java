@@ -19,19 +19,13 @@ import javafx.collections.ObservableList;
 
 public class IOModel {
 
-    public interface IOModelCallback {
-        void onLoadSuccess();
-    }
-
-    private IOModelCallback callback;
     private List<String> favourites;
     private String authToken;
     private String localIp;
     private String saveDir;
 
 
-    public IOModel(IOModelCallback callback) throws IOException {
-        this.callback = callback;
+    public IOModel() throws IOException {
 
         String path = new File(
             IOModel.class.getProtectionDomain()
@@ -41,9 +35,6 @@ public class IOModel {
         favourites = new ArrayList<>();
         try {
             loadFromFile();
-            if (callback != null) {
-                callback.onLoadSuccess();
-            }
         } catch (IOException e) {
             throw e;
         }
@@ -65,8 +56,12 @@ public class IOModel {
             for (String key : properties.stringPropertyNames()) {
                 favourites.add(properties.getProperty(key));
             }
-            System.out.println("File loaded from " + saveDir); // TODO: Alert
         } catch (IOException e) {
+            try (FileOutputStream out = new FileOutputStream(saveDir)) {
+                properties.store(out, "Favourites");
+            } catch (IOException ioE) {
+                throw new IOException("I/O Error when writing to file", ioE);
+            }
             throw new IOException("Error when loading file", e);
         }
     }
@@ -83,30 +78,33 @@ public class IOModel {
         return favourites;
     }
 
-    public void saveToProperties(ObservableList<String> selectedItems, String ip, String auth) {
+    public void saveToProperties(ObservableList<String> selectedItems, String ip, String auth) throws IOException {
 
         Properties properties = new Properties();
 
         properties.setProperty("ip", isValidInput(ip) ? ip : "");
         properties.setProperty("auth", isValidInput(auth) ? auth : "");
+
+        System.out.println("So far so good");
         
         int index = 0;
-        for (Object selectedItem : selectedItems) {
+        for (String selectedItem : selectedItems) {
             index++;
-            properties.setProperty(Integer.toString(index), selectedItem.toString());
+            properties.setProperty(Integer.toString(index), selectedItem);
         }
+
+        System.out.println("So far so good2");
 
         try (FileOutputStream out = new FileOutputStream(saveDir)) {
             properties.store(out, "Favourites");
-            System.out.println("Data written to properties file successfully.");
-            //TODO: Alert success
+            System.out.println("So far so good3");
+
         } catch (IOException e) {
-            System.out.println("IO Error when writing to file");
-            //TODO: Alert failure
+            throw new IOException("I/O Error when writing to file", e);
         }
     }
     
-    private FileWriter initFileTemplate(String fileName, String[] columns) throws IOException {
+    private FileWriter initFileTemplate(String fileName, String[] columns) throws Exception {
         String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
         File file = new File(path, fileName + ".csv");
         try {
@@ -115,7 +113,7 @@ public class IOModel {
                 System.out.println("Operation will overwrite existing files");
             }
         } catch (SecurityException e) {
-            System.out.println("Could not create save report directory");
+            throw new Exception("Could not create save report directory", e);
         }
         FileWriter csv = new FileWriter(file);
         for (String header : columns) {
@@ -126,7 +124,7 @@ public class IOModel {
         return csv;
     }
 
-    public void writeToFile(ArrayList<String> data, String[] headers, String filename) {
+    public void writeToFile(ArrayList<String> data, String[] headers, String filename) throws Exception {
 
         try (FileWriter csv = initFileTemplate(filename, headers)) {
 
@@ -138,10 +136,8 @@ public class IOModel {
             csv.flush();
             csv.close();
         } catch (IOException e) {
-            System.out.println("Alert: Some error occurred when writing to file, this needs to be an alert");
+            throw new IOException("Alert: Some error occurred when writing to file.", e);
         }
-
-        System.out.println("Alert success");
         locateFile();
     }
 
@@ -157,13 +153,13 @@ public class IOModel {
 
 
     @SuppressWarnings("deprecation")
-    private void locateFile() {
+    private void locateFile() throws IOException {
         if (isWindows()) {
             try {
                 String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
                 Desktop.getDesktop().open(new File(path));
             } catch (IOException e) {
-                System.out.println("Alert Operation successful");
+                throw new IOException("An error occurred when locating file", e);
             }
 
         } else if (isMac()) {
@@ -171,7 +167,7 @@ public class IOModel {
                 String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
                 Runtime.getRuntime().exec("open " + path);
             } catch (IOException e) {
-                System.out.println("Alert Directory cannot be located");
+                throw new IOException("An error occurred when locating file", e);
             }
 
         }

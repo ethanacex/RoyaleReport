@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.Authenticator;
 import java.util.ArrayList;
 
 /**
@@ -19,16 +20,18 @@ public class ReportModel {
 
     public ReportModel() throws IOException {
         NET_MODEL = new NetModel();
-        IO_MODEL = new IOModel(null);
+        IO_MODEL = new IOModel();
     }
 
-    public void buildPerformanceReport(String tag, String token) {
+    public void buildPerformanceReport(String cTag, String token) throws Exception {
 
-        String[] columnHeaders = {"Rank", "Name"};
+        String[] columnHeaders = {"War, Rank", "Name", "Fame", "Participation"};
         String template = API_ENDPOINT + "v1/clans/%s/riverracelog";
-        String url = String.format(template, tag.replace("#", "%23"));
+        String url = String.format(template, cTag.replace("#", "%23"));
+
         JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));
         JSONArray items = response.getJSONArray("items");
+
         StringBuilder row = new StringBuilder();
         
         ArrayList<String> data = new ArrayList<>();
@@ -40,24 +43,42 @@ public class ReportModel {
 
                 JSONObject warResult = standings.getJSONObject(i);
                 JSONObject clan = warResult.getJSONObject("clan");
-                String clanRank = warResult.get("rank").toString();
-                String clanName = clan.get("name").toString();
+                JSONArray participants = clan.getJSONArray("participants");
+                String name = clan.getString("name");
+                String tag = clan.getString("tag");
+                int fame = clan.getInt("fame");
+                int rank = warResult.getInt("rank");
+                int participationCount = 0;
 
-                row.append(clanRank);
-                row.append(",");
-                row.append(clanName);
+                if (tag.equalsIgnoreCase(cTag)) {
 
-                data.add(row.toString());
-
-                row = new StringBuilder();
-
-                //System.out.println(clanRank + " " + clanName);
-            }
+                    row.append(war + 1);
+                    row.append(",");
+                    row.append(rank);
+                    row.append(",");
+                    row.append(name);
+                    row.append(",");
+                    row.append(fame);
+                    row.append(",");
+                    for (int participant = 0; participant < participants.length(); participant++) {
+                        if (participants.getJSONObject(participant).getInt("decksUsed") > 0) {
+                            participationCount++;
+                        }
+                    }
+                    row.append(participationCount);
     
-            IO_MODEL.writeToFile(data, columnHeaders, "performanceReport");
-
+                    data.add(row.toString());
+    
+                    row = new StringBuilder();
+                }
+            }
         }
+        
+        IO_MODEL.writeToFile(data, columnHeaders, "Performance Report");
 
     }
-    
+
+
+
+
 }
