@@ -47,7 +47,17 @@ public class IOModel {
 
     private void loadFromFile() throws IOException {
         Properties properties = new Properties();
-        try (FileInputStream in = new FileInputStream(saveDir)) {
+        File file = new File(saveDir);
+        
+        if (!file.exists()) {
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                properties.store(out, "Favourites");
+            } catch (IOException e) {
+                throw new IOException("Failed to create an empty properties file at " + saveDir, e);
+            }
+        }
+    
+        try (FileInputStream in = new FileInputStream(file)) {
             properties.load(in);
             authToken = properties.getProperty("auth");
             localIp = properties.getProperty("ip");
@@ -57,11 +67,6 @@ public class IOModel {
                 favourites.add(properties.getProperty(key));
             }
         } catch (IOException e) {
-            try (FileOutputStream out = new FileOutputStream(saveDir)) {
-                properties.store(out, "Favourites");
-            } catch (IOException ioE) {
-                throw new IOException("I/O Error when writing to file", ioE);
-            }
             throw new IOException("Error when loading file", e);
         }
     }
@@ -84,8 +89,6 @@ public class IOModel {
 
         properties.setProperty("ip", isValidInput(ip) ? ip : "");
         properties.setProperty("auth", isValidInput(auth) ? auth : "");
-
-        System.out.println("So far so good");
         
         int index = 0;
         for (String selectedItem : selectedItems) {
@@ -93,12 +96,8 @@ public class IOModel {
             properties.setProperty(Integer.toString(index), selectedItem);
         }
 
-        System.out.println("So far so good2");
-
         try (FileOutputStream out = new FileOutputStream(saveDir)) {
             properties.store(out, "Favourites");
-            System.out.println("So far so good3");
-
         } catch (IOException e) {
             throw new IOException("I/O Error when writing to file", e);
         }

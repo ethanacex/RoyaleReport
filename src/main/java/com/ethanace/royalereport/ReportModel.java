@@ -1,10 +1,10 @@
 package com.ethanace.royalereport;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.Authenticator;
 import java.util.ArrayList;
 
 /**
@@ -12,7 +12,6 @@ import java.util.ArrayList;
  */
 
 public class ReportModel {
-    
     
     private final NetModel NET_MODEL;
     private final IOModel IO_MODEL;
@@ -23,11 +22,20 @@ public class ReportModel {
         IO_MODEL = new IOModel();
     }
 
-    public void buildPerformanceReport(String cTag, String token) throws Exception {
+    public JSONObject getRiverRaceLog(String clanTag, String token) throws Exception {
+        String template = API_ENDPOINT + "v1/clans/%s/riverracelog";
+        String url = String.format(template, clanTag.replace("#", "%23"));
+        
+        JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));
+        JSONArray items = response.getJSONArray("items");
+        return null;
+    }
+
+    public void buildClanReport(String clanTag, String token) throws Exception {
 
         String[] columnHeaders = {"War, Rank", "Name", "Fame", "Participation"};
         String template = API_ENDPOINT + "v1/clans/%s/riverracelog";
-        String url = String.format(template, cTag.replace("#", "%23"));
+        String url = String.format(template, clanTag.replace("#", "%23"));
 
         JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));
         JSONArray items = response.getJSONArray("items");
@@ -50,7 +58,7 @@ public class ReportModel {
                 int rank = warResult.getInt("rank");
                 int participationCount = 0;
 
-                if (tag.equalsIgnoreCase(cTag)) {
+                if (tag.equalsIgnoreCase(clanTag)) {
 
                     row.append(war + 1);
                     row.append(",");
@@ -78,7 +86,13 @@ public class ReportModel {
 
     }
 
+    public void buildPlayerReport() throws Exception {
 
+        String[] columnHeaders = {"Tag", "Name", "Participation"};
+
+
+
+    }
 
 
 }

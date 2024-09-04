@@ -114,7 +114,7 @@ public class Controller implements Initializable {
             String auth = authField.getText();
 
             switch (reportType) {
-                case Report.CLAN_PERFORMANCE -> reportModel.buildPerformanceReport(clan, auth);
+                case Report.CLAN_PERFORMANCE -> reportModel.buildClanReport(clan, auth);
                 case Report.PLAYER_PERFORMANCE -> System.out.println(reportType);
                 case Report.PDK -> System.out.println(reportType);
                 default -> throw new Exception("Unknown report type");
