@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.tinylog.Logger;
 
 /**
  * @author ethanace
@@ -19,6 +20,7 @@ public class ReportModel {
     public ReportModel() throws IOException {
         NET_MODEL = new NetModel();
         IO_MODEL = new IOModel();
+        Logger.info("ReportModel initialised successfully");
     }
 
     public JSONObject getRiverRaceLog(String clanTag, String token) throws Exception {
@@ -32,6 +34,7 @@ public class ReportModel {
 
     public void buildClanReport(String clanTag, String token) throws Exception {
 
+        Logger.info("Build Clan Report requested");
         String[] columnHeaders = {"War, Rank", "Name", "Fame", "Participation"};
         String template = API_ENDPOINT + "v1/clans/%s/riverracelog";
         String url = String.format(template, clanTag.replace("#", "%23"));

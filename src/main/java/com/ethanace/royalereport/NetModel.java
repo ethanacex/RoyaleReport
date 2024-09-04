@@ -9,6 +9,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+import org.tinylog.Logger;
+
 public class NetModel {
 
     public String getPublicIPAddress() throws Exception {
@@ -52,9 +54,11 @@ public class NetModel {
             if (response.statusCode() == 200) {
                 return response.body();
             } else {
+                Logger.error("Failed to get data: HTTP response code " + response.statusCode());
                 throw new Exception("Failed to get data: HTTP response code " + response.statusCode());
             }
         } catch (Exception e) {
+            Logger.error("An error occurred during HTTP GET request");
             throw new Exception("An error occurred during HTTP GET request: ", e);
         }
     }

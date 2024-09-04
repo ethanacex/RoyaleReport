@@ -1,5 +1,10 @@
 package com.ethanace.royalereport;
 
+import java.io.File;
+
+import org.tinylog.Logger;
+import org.tinylog.configuration.Configuration;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

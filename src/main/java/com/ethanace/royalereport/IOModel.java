@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.tinylog.Logger;
+
 import javafx.collections.ObservableList;
 
 /**
@@ -33,6 +35,9 @@ public class IOModel {
                 .getParent();
         saveDir = Paths.get(path, "save.properties").toString();
         favourites = new ArrayList<>();
+
+        Logger.info("IOModel initialised successfully");
+
         try {
             loadFromFile();
         } catch (IOException e) {
@@ -171,6 +176,6 @@ public class IOModel {
     public String getLocalIP() {
         return localIp;
     }
-    
+ 
 }
 

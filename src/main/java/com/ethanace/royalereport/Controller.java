@@ -5,6 +5,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import org.tinylog.Logger;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -156,15 +158,13 @@ public class Controller implements Initializable {
 
         try {
             ioModel = new IOModel();
-            System.out.println("ioModel init successful");
         } catch (IOException e) {
             alertUser(AlertType.ERROR, e.getMessage());
         }
         netModel = new NetModel();
-        System.out.println("netModel init successful");
         
         loadPreferences();
-        System.out.println("load preferences successful");
+        Logger.info("Load preferences successful");
         
         ObservableList<Report> items = FXCollections.observableArrayList(
                 Report.CLAN_PERFORMANCE,
