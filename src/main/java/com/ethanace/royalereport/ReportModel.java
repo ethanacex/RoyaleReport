@@ -1,11 +1,10 @@
 package com.ethanace.royalereport;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.ArrayList;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * @author ethanace
@@ -82,7 +81,7 @@ public class ReportModel {
             }
         }
         
-        IO_MODEL.writeToFile(data, columnHeaders, "Performance Report");
+        IO_MODEL.writeToFile(data, columnHeaders, "Clan Report");
 
     }
 

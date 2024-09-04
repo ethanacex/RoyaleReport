@@ -105,6 +105,15 @@ public class Controller implements Initializable {
     }
     
     @FXML
+    private void getNewToken() {
+        try {
+            netModel.openLink("https://developer.clashroyale.com");
+        } catch (Exception e) {
+            alertUser(AlertType.ERROR, e.getMessage());
+        }
+    }
+    
+    @FXML
     private void buildReport() {
         try {
 

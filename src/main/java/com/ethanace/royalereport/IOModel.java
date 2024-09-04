@@ -24,7 +24,7 @@ public class IOModel {
     private String localIp;
     private String saveDir;
 
-
+    
     public IOModel() throws IOException {
 
         String path = new File(
@@ -39,6 +39,47 @@ public class IOModel {
             throw e;
         }
         
+    }
+
+    @SuppressWarnings("deprecation")
+    private void locateFile() throws IOException {
+        if (isWindows()) {
+            try {
+                String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
+                Desktop.getDesktop().open(new File(path));
+            } catch (IOException e) {
+                throw new IOException("An error occurred when locating file", e);
+            }
+
+        } else if (isMac()) {
+            try {
+                String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
+                Runtime.getRuntime().exec("open " + path);
+            } catch (IOException e) {
+                throw new IOException("An error occurred when locating file", e);
+            }
+
+        }
+    }
+
+    private FileWriter initFileTemplate(String fileName, String[] columns) throws Exception {
+        String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
+        File file = new File(path, fileName + ".csv");
+        try {
+            boolean dirCreated = file.getParentFile().mkdirs();
+            if (!dirCreated) {
+                System.out.println("Operation will overwrite existing files");
+            }
+        } catch (SecurityException e) {
+            throw new Exception("Could not create save report directory", e);
+        }
+        FileWriter csv = new FileWriter(file);
+        for (String header : columns) {
+            csv.append(header);
+            csv.append(",");
+        }
+        csv.append("\n");
+        return csv;
     }
 
     private boolean isValidInput(String input) {
@@ -71,17 +112,16 @@ public class IOModel {
         }
     }
     
-    public String getAuthToken() {
-        return authToken;
+    private boolean isWindows() {
+        String os = System.getProperty("os.name").toLowerCase();
+        return (os.contains("win"));
     }
-    
-    public String getLocalIP() {
-        return localIp;
+
+    private boolean isMac() {
+        String os = System.getProperty("os.name").toLowerCase();
+        return (os.contains("mac"));
     }
-    
-    public List<String> getFavourites() {
-        return favourites;
-    }
+
 
     public void saveToProperties(ObservableList<String> selectedItems, String ip, String auth) throws IOException {
 
@@ -103,26 +143,6 @@ public class IOModel {
         }
     }
     
-    private FileWriter initFileTemplate(String fileName, String[] columns) throws Exception {
-        String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
-        File file = new File(path, fileName + ".csv");
-        try {
-            boolean dirCreated = file.getParentFile().mkdirs();
-            if (!dirCreated) {
-                System.out.println("Operation will overwrite existing files");
-            }
-        } catch (SecurityException e) {
-            throw new Exception("Could not create save report directory", e);
-        }
-        FileWriter csv = new FileWriter(file);
-        for (String header : columns) {
-            csv.append(header);
-            csv.append(",");
-        }
-        csv.append("\n");
-        return csv;
-    }
-
     public void writeToFile(ArrayList<String> data, String[] headers, String filename) throws Exception {
 
         try (FileWriter csv = initFileTemplate(filename, headers)) {
@@ -140,37 +160,17 @@ public class IOModel {
         locateFile();
     }
 
-    private boolean isWindows() {
-        String os = System.getProperty("os.name").toLowerCase();
-        return (os.contains("win"));
+    public List<String> getFavourites() {
+        return favourites;
     }
 
-    private boolean isMac() {
-        String os = System.getProperty("os.name").toLowerCase();
-        return (os.contains("mac"));
+    public String getAuthToken() {
+        return authToken;
     }
-
-
-    @SuppressWarnings("deprecation")
-    private void locateFile() throws IOException {
-        if (isWindows()) {
-            try {
-                String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
-                Desktop.getDesktop().open(new File(path));
-            } catch (IOException e) {
-                throw new IOException("An error occurred when locating file", e);
-            }
-
-        } else if (isMac()) {
-            try {
-                String path = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "RoyaleReport";
-                Runtime.getRuntime().exec("open " + path);
-            } catch (IOException e) {
-                throw new IOException("An error occurred when locating file", e);
-            }
-
-        }
+    
+    public String getLocalIP() {
+        return localIp;
     }
-
+    
 }
 

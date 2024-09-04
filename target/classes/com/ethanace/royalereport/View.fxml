@@ -9,6 +9,8 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -29,10 +31,25 @@
                            </VBox.margin>
                         </TextField>
                         <ComboBox fx:id="reportList" minWidth="160.0" promptText="War Performance" />
-                        <HBox minWidth="160.0" spacing="22.0">
+                        <HBox minWidth="160.0" spacing="30.0">
                            <children>
-                              <Button mnemonicParsing="false" onAction="#buildReport" text="Build" />
-                              <Button mnemonicParsing="false" onAction="#addToFavourites" text="Add Favourite" />
+                              <Button mnemonicParsing="false" onAction="#buildReport" text="Build">
+                                 <graphic>
+                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@documents-94.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic></Button>
+                              <Button mnemonicParsing="false" onAction="#addToFavourites" text="Add">
+                                 <graphic>
+                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@forward-94.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                              </Button>
                            </children>
                         </HBox>
                      </children>
@@ -46,13 +63,20 @@
                         <Insets bottom="10.0" left="10.0" right="5.0" top="10.0" />
                      </padding>
                   </VBox>
-                  <StackPane prefHeight="150.0" prefWidth="50.0">
+                  <StackPane prefWidth="50.0">
                      <children>
-                        <Button mnemonicParsing="false" onAction="#populateClanTag" text="Copy" StackPane.alignment="TOP_CENTER" />
+                        <Button mnemonicParsing="false" onAction="#populateClanTag" prefHeight="18.0" prefWidth="36.0" StackPane.alignment="TOP_CENTER">
+                           <graphic>
+                              <ImageView fitHeight="15.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@back-94.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <StackPane.margin>
+                              <Insets top="32.0" />
+                           </StackPane.margin></Button>
                      </children>
-                     <padding>
-                        <Insets top="32.0" />
-                     </padding>
                   </StackPane>
                   <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0">
                      <children>
@@ -62,10 +86,24 @@
                               <Insets top="-5.0" />
                            </VBox.margin>
                         </ListView>
-                        <HBox spacing="53.0">
+                        <HBox spacing="15.0">
                            <children>
-                              <Button mnemonicParsing="false" onAction="#removeFromFavourites" text="Delete" />
-                              <Button mnemonicParsing="false" onAction="#savePreferences" text="Save" />
+                              <Button mnemonicParsing="false" onAction="#savePreferences" text="Save">
+                                 <graphic>
+                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@save-94.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic></Button>
+                              <Button mnemonicParsing="false" onAction="#removeFromFavourites" text="Delete">
+                                 <graphic>
+                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@close-94.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic></Button>
                            </children>
                         </HBox>
                      </children>
@@ -76,6 +114,13 @@
                </children>
             </HBox>
          </content>
+         <graphic>
+            <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@pie-chart-94.png" />
+               </image>
+            </ImageView>
+         </graphic>
       </Tab>
       <Tab closable="false" text="Settings">
          <content>
@@ -84,43 +129,88 @@
          <content>
             <HBox prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <VBox prefHeight="142.0" prefWidth="279.0">
+                  <VBox prefHeight="143.0" prefWidth="388.0" spacing="10.0">
                      <children>
-                        <Label text="IPv4 Address">
-                           <VBox.margin>
-                              <Insets bottom="5.0" />
-                           </VBox.margin>
-                        </Label>
-                        <TextField fx:id="ipField" promptText="IP associated with token">
-                           <VBox.margin>
-                              <Insets bottom="10.0" />
-                           </VBox.margin>
-                        </TextField>
-                        <Label text="Authorisation Token">
-                           <VBox.margin>
-                              <Insets bottom="5.0" />
-                           </VBox.margin>
-                        </Label>
-                        <TextArea fx:id="authField" prefHeight="200.0" prefWidth="200.0" promptText="Token associated with IP" />
+                        <HBox spacing="62.0">
+                           <children>
+                              <Label text="IPv4 Address">
+                                 <graphic>
+                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@at-sign-94.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                              </Label>
+                              <TextField fx:id="ipField" promptText="IP associated with token" HBox.hgrow="ALWAYS" />
+                           </children>
+                        </HBox>
+                        <HBox spacing="25.0">
+                           <children>
+                              <VBox spacing="40.0">
+                                 <children>
+                                    <Label text="Authorisation Token">
+                                       <graphic>
+                                          <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@key-94.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Label>
+                                    <Button mnemonicParsing="false" onAction="#getNewToken" prefHeight="26.0" prefWidth="134.0" text="Get new token" VBox.vgrow="ALWAYS" />
+                                 </children>
+                              </VBox>
+                              <TextArea fx:id="authField" prefHeight="200.0" prefWidth="200.0" promptText="Token associated with IP" wrapText="true" HBox.hgrow="ALWAYS" />
+                           </children>
+                        </HBox>
                      </children>
                      <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                      </padding>
                   </VBox>
-                  <VBox alignment="CENTER" spacing="10.0" HBox.hgrow="ALWAYS">
-                     <children>
-                        <Label text="Your current IP address" />
-                        <Label fx:id="ipLabel" text="192.168.0.0.1">
-                           <font>
-                              <Font name="System Bold" size="13.0" />
-                           </font>
-                        </Label>
-                        <Label alignment="CENTER" contentDisplay="TOP" maxHeight="75.0" maxWidth="169.0" prefHeight="75.0" prefWidth="169.0" text="If the IPv4 address is different to your current IP address, you'll need a new authorisation token" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS" />
-                     </children>
-                  </VBox>
                </children>
             </HBox>
          </content>
+         <graphic>
+            <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@gear-94.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Tab>
+      <Tab closable="false" text="Info">
+         <content>
+            <VBox alignment="CENTER" prefHeight="142.0" prefWidth="267.0" spacing="5.0">
+               <children>
+                  <Label text="Your current IP address" VBox.vgrow="ALWAYS" />
+                  <Label fx:id="ipLabel" text="192.168.0.0.1">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                     <graphic>
+                        <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@help-94.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Label>
+                  <Label alignment="CENTER" contentDisplay="TOP" text="If your current IP address does not match the IP address associated with the auth token, then the reports will not work. IP's change when you move onto new WiFi or when your router restarts" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="30.0" right="30.0" top="10.0" />
+               </padding>
+            </VBox>
+         </content>
+         <graphic>
+            <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@info-94.png" />
+               </image>
+            </ImageView>
+         </graphic>
       </Tab>
    </tabs>
 </TabPane>

@@ -3,82 +3,73 @@ package com.ethanace.royalereport;
 /**
  * @author ethanace
  */
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.UnknownHostException;
+import java.awt.Desktop;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 public class NetModel {
 
-    @SuppressWarnings("deprecation")
     public String getPublicIPAddress() throws Exception {
-
         String publicIP = "Undetermined";
-
         try {
-
-            URL url = new URL("http://checkip.amazonaws.com/");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            URI uri = new URI("http://checkip.amazonaws.com/");
             
-            connection.setRequestMethod("GET");
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            publicIP = in.readLine();
-            in.close();
-
-        } catch (MalformedURLException e) {
-            throw new Exception("The URL is malformed: ", e);
-        } catch (UnknownHostException e) {
-            throw new Exception("The host could not be determined: ", e);
-        } catch (SocketTimeoutException e) {
-            throw new Exception("Connection timed out: ", e);
-        } catch (IOException e) {
-            throw new Exception("An error occurred on connection InputStream: ", e);
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
+                .GET()
+                .build();
+            
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    
+            if (response.statusCode() == 200) {
+                publicIP = response.body();
+            } else {
+                throw new Exception("Failed to get IP address: HTTP response code " + response.statusCode());
+            }
+        } catch (Exception e) {
+            throw new Exception("An error occurred while getting the public IP address: ", e);
         }
         return publicIP;
     }
-
-    @SuppressWarnings("deprecation")
+    
     public String HTTPGet(String url, String token) throws Exception {
         try {
-
-            URL obj = new URL(url);
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-            con.setRequestMethod("GET");
-            con.setRequestProperty("Authorization", "Bearer " + token);
-            con.setRequestProperty("User-Agent", "Mozilla/5.0");
-
-            int responseCode = con.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                StringBuilder response;
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-                    String inputLine;
-                    response = new StringBuilder();
-                    while ((inputLine = in.readLine()) != null) {
-                        response.append(inputLine);
-                    }
-                }
-                return response.toString();
+            URI uri = new URI(url);
+            
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
+                .header("Authorization", "Bearer " + token)
+                .header("User-Agent", "Mozilla/5.0")
+                .GET()
+                .build();
+            
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    
+            if (response.statusCode() == 200) {
+                return response.body();
             } else {
-                return "";
+                throw new Exception("Failed to get data: HTTP response code " + response.statusCode());
             }
-        } catch (MalformedURLException e) {
-            throw new Exception("HTTPGet URL is malformed", e);
-        } catch (ProtocolException e) {
-            throw new Exception("HTTPGet encountered protocol error", e);
-        } catch (IOException e) {
-            throw new Exception("Error when retrieving data from HTTP input stream", e);
-        } catch (SecurityException e) {
-            throw new Exception("A security error occurred during HTTPGet", e);
         } catch (Exception e) {
-            throw new Exception("HTTPGet unknown error occurred", e);
+            throw new Exception("An error occurred during HTTP GET request: ", e);
         }
     }
 
+    public void openLink(String url) throws Exception {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                URI uri = new URI(url);
+                desktop.browse(uri);
+            } else {
+                throw new Exception("Something went wrong, please visit Supercell's Developer page to get a new token");
+            }
+        } catch (Exception e) {
+            throw new Exception("Something went wrong, please visit Supercell's Developer page to get a new token", e);
+        }
+    }
 }
