@@ -1,4 +1,4 @@
-package com.ethanace.royalereport;
+package com.ethanace;
 
 import java.io.IOException;
 import java.net.URL;
@@ -126,8 +126,8 @@ public class Controller implements Initializable {
 
             switch (reportType) {
                 case Report.CLAN_PERFORMANCE -> reportModel.buildClanReport(clan, auth);
-                case Report.PLAYER_PERFORMANCE -> System.out.println(reportType);
-                case Report.PDK -> System.out.println(reportType);
+                case Report.PLAYER_PERFORMANCE -> Logger.info(reportType);
+                case Report.PDK -> Logger.info(reportType);
                 default -> throw new Exception("Unknown report type");
             }
 
@@ -177,7 +177,6 @@ public class Controller implements Initializable {
         
         try {
             ipLabel.setText(netModel.getPublicIPAddress());
-            System.out.println("get public IP successful");
         } catch (Exception e) {
             alertUser(AlertType.ERROR, e.getMessage());
         }

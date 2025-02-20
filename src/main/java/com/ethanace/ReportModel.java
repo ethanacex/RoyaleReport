@@ -1,4 +1,4 @@
-package com.ethanace.royalereport;
+package com.ethanace;
 
 import java.io.IOException;
 import java.util.ArrayList;

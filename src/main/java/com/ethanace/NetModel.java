@@ -1,4 +1,4 @@
-package com.ethanace.royalereport;
+package com.ethanace;
 
 /**
  * @author ethanace
@@ -28,6 +28,7 @@ public class NetModel {
     
             if (response.statusCode() == 200) {
                 publicIP = response.body();
+                Logger.info("Public IP resolved: " + publicIP);
             } else {
                 throw new Exception("Failed to get IP address: HTTP response code " + response.statusCode());
             }

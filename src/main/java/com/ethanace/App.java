@@ -1,9 +1,4 @@
-package com.ethanace.royalereport;
-
-import java.io.File;
-
-import org.tinylog.Logger;
-import org.tinylog.configuration.Configuration;
+package com.ethanace;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

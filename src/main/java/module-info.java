@@ -1,4 +1,4 @@
-module com.ethanace.royalereport {
+module com.ethanace {
     requires transitive javafx.controls;
     requires javafx.fxml;
     requires org.json;
@@ -6,6 +6,6 @@ module com.ethanace.royalereport {
     requires java.desktop;
     requires java.net.http;
 
-    opens com.ethanace.royalereport to javafx.fxml;
-    exports com.ethanace.royalereport;
+    opens com.ethanace to javafx.fxml;
+    exports com.ethanace;
 }

@@ -14,7 +14,7 @@
             "type": "java",
             "name": "App",
             "request": "launch",
-            "mainClass": "com.ethanace.royalereport/com.ethanace.royalereport.App",
+            "mainClass": "com.ethanace/com.ethanace.Main",
             "projectName": "royalereport"
         }
     ]

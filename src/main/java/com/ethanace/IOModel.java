@@ -1,4 +1,4 @@
-package com.ethanace.royalereport;
+package com.ethanace;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -73,7 +73,7 @@ public class IOModel {
         try {
             boolean dirCreated = file.getParentFile().mkdirs();
             if (!dirCreated) {
-                System.out.println("Operation will overwrite existing files");
+                Logger.info("Operation will overwrite existing files");
             }
         } catch (SecurityException e) {
             throw new Exception("Could not create save report directory", e);
