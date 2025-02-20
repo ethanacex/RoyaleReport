@@ -1,7 +1,8 @@
-com/ethanace/royalereport/IOModel.class
-com/ethanace/royalereport/App.class
+com/ethanace/App.class
 module-info.class
-com/ethanace/royalereport/Controller.class
-com/ethanace/royalereport/Controller$Report.class
-com/ethanace/royalereport/ReportModel.class
-com/ethanace/royalereport/NetModel.class
+com/ethanace/Controller.class
+com/ethanace/IOModel.class
+com/ethanace/Controller$Report.class
+com/ethanace/NetModel.class
+com/ethanace/ReportModel.class
+com/ethanace/Main.class
