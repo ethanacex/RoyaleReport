@@ -39,6 +39,7 @@ public class Controller implements Initializable {
 
     private IOModel ioModel;
     private NetModel netModel;
+    private ReportModel reportModel;
     
     public enum Report {
         CLAN_PERFORMANCE("Clan Performance", 1),
@@ -83,9 +84,16 @@ public class Controller implements Initializable {
     private void savePreferences() {
         try {
             ioModel.saveToProperties(favouritesList.getItems(), ipField.getText(), authField.getText());
+            alertUser(AlertType.INFORMATION, "Preferences saved successfully");
         } catch (IOException e) {
             alertUser(AlertType.ERROR, e.getMessage());
         }
+    }
+
+    @FXML
+    private void copyToClipboard() {
+        ioModel.copyToClipboard(ipLabel.getText());
+        alertUser(AlertType.INFORMATION, "IP copied to clipboard");
     }
     
     @FXML
@@ -109,7 +117,7 @@ public class Controller implements Initializable {
     @FXML
     private void getNewToken() {
         try {
-            netModel.openLink("https://developer.clashroyale.com");
+            netModel.openSupercellDevSite();
         } catch (Exception e) {
             alertUser(AlertType.ERROR, e.getMessage());
         }
@@ -118,9 +126,7 @@ public class Controller implements Initializable {
     @FXML
     private void buildReport() {
         try {
-
             Report reportType = reportList.getSelectionModel().getSelectedItem();
-            ReportModel reportModel = new ReportModel();
             String clan = clanTagField.getText();
             String auth = authField.getText();
 
@@ -158,13 +164,17 @@ public class Controller implements Initializable {
 
         try {
             ioModel = new IOModel();
+            netModel = new NetModel();
+            reportModel = new ReportModel(netModel, ioModel);
         } catch (IOException e) {
             alertUser(AlertType.ERROR, e.getMessage());
+            return;
+        } catch (Exception e) {
+            alertUser(AlertType.ERROR, e.getMessage());
+            return;
         }
-        netModel = new NetModel();
         
         loadPreferences();
-        Logger.info("Load preferences successful");
         
         ObservableList<Report> items = FXCollections.observableArrayList(
                 Report.CLAN_PERFORMANCE,

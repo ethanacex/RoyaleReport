@@ -17,9 +17,9 @@ public class ReportModel {
     private final IOModel IO_MODEL;
     private final String API_ENDPOINT = "https://api.clashroyale.com/";
 
-    public ReportModel() throws IOException {
-        NET_MODEL = new NetModel();
-        IO_MODEL = new IOModel();
+    public ReportModel(NetModel netModel, IOModel ioModel) throws IOException {
+        NET_MODEL = netModel;
+        IO_MODEL = ioModel;
         Logger.info("ReportModel initialised successfully");
     }
 
@@ -84,7 +84,7 @@ public class ReportModel {
             }
         }
         
-        IO_MODEL.writeToFile(data, columnHeaders, "Clan Report");
+        IO_MODEL.writeCsv(data, columnHeaders, "Clan Report");
 
     }
 

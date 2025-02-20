@@ -77,4 +77,8 @@ public class NetModel {
             throw new Exception("Something went wrong, please visit Supercell's Developer page to get a new token", e);
         }
     }
+
+    public void openSupercellDevSite() throws Exception {
+        openLink("https://developer.clashroyale.com");
+    }
 }

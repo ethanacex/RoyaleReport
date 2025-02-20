@@ -182,25 +182,38 @@
       </Tab>
       <Tab closable="false" text="Info">
          <content>
-            <VBox alignment="CENTER" prefHeight="142.0" prefWidth="267.0" spacing="5.0">
+            <VBox alignment="CENTER" prefHeight="142.0" prefWidth="389.0" spacing="5.0">
                <children>
                   <Label text="Your current IP address" VBox.vgrow="ALWAYS" />
-                  <Label fx:id="ipLabel" text="192.168.0.0.1">
-                     <font>
-                        <Font name="System Bold" size="13.0" />
-                     </font>
-                     <graphic>
-                        <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@images/help-94.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Label>
-                  <Label alignment="CENTER" contentDisplay="TOP" text="If your current IP address does not match the IP address associated with the auth token, then the reports will not work. IP's change when you move onto new WiFi or when your router restarts" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS" />
+                  <HBox alignment="CENTER" prefHeight="28.0" prefWidth="345.0" spacing="10.0">
+                     <children>
+                        <Label fx:id="ipLabel" text="192.168.0.0.1">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                           <graphic>
+                              <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/help-94.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Label>
+                        <Button id="clipboard" mnemonicParsing="false" onAction="#copyToClipboard" text="Copy">
+                           <graphic>
+                              <ImageView fitHeight="20.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/inspection-94.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                     </children>
+                  </HBox>
+                  <Label alignment="CENTER" contentDisplay="TOP" prefHeight="67.0" prefWidth="366.0" text="If your current IP address does not match the IP address associated with the auth token, then the reports will not work. IP's change when you move onto new WiFi or when your router restarts" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS" />
                </children>
                <padding>
-                  <Insets bottom="10.0" left="30.0" right="30.0" top="10.0" />
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
             </VBox>
          </content>
