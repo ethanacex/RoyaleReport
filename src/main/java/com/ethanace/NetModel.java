@@ -12,43 +12,28 @@ import java.net.http.HttpResponse;
 import org.tinylog.Logger;
 
 public class NetModel {
-
-    public String getPublicIPAddress() throws Exception {
-        String publicIP = "Undetermined";
-        try {
-            URI uri = new URI("http://checkip.amazonaws.com/");
-            
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                .uri(uri)
-                .GET()
-                .build();
-            
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
     
-            if (response.statusCode() == 200) {
-                publicIP = response.body();
-                Logger.info("Public IP resolved: " + publicIP);
-            } else {
-                throw new Exception("Failed to get IP address: HTTP response code " + response.statusCode());
-            }
-        } catch (Exception e) {
-            throw new Exception("An error occurred while getting the public IP address: ", e);
-        }
+    public String getPublicIP() throws Exception {
+        String publicIP = HTTPGet("http://checkip.amazonaws.com/", null);
+        Logger.info("Public IP resolved: " + publicIP);
         return publicIP;
     }
-    
+
     public String HTTPGet(String url, String token) throws Exception {
         try {
             URI uri = new URI(url);
             
             HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(uri)
-                .header("Authorization", "Bearer " + token)
                 .header("User-Agent", "Mozilla/5.0")
-                .GET()
-                .build();
+                .GET();
+            
+            if (token != null) {
+                requestBuilder.header("Authorization", "Bearer " + token);
+            }
+            
+            HttpRequest request = requestBuilder.build();
             
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
     

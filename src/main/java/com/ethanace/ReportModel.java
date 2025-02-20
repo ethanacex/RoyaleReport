@@ -34,7 +34,7 @@ public class ReportModel {
 
     public void buildClanReport(String clanTag, String token) throws Exception {
 
-        Logger.info("Build Clan Report requested");
+        Logger.info("Clan Report requested");
         String[] columnHeaders = {"War, Rank", "Name", "Fame", "Participation"};
         String template = API_ENDPOINT + "v1/clans/%s/riverracelog";
         String url = String.format(template, clanTag.replace("#", "%23"));
@@ -96,5 +96,11 @@ public class ReportModel {
 
     }
 
+    public void buildPDKReport() throws Exception {
 
+        String[] columnHeaders = {"Playertag", "Name", "Last seen", "Inactive days"};
+
+        
+
+    }
 }

@@ -186,7 +186,7 @@ public class Controller implements Initializable {
         reportList.getSelectionModel().selectFirst();
         
         try {
-            ipLabel.setText(netModel.getPublicIPAddress());
+            ipLabel.setText(netModel.getPublicIP());
         } catch (Exception e) {
             alertUser(AlertType.ERROR, e.getMessage());
         }
