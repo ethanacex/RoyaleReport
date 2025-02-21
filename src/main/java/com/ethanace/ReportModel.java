@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.tinylog.Logger;
 
+import com.ethanace.Controller.ActionRequest;
+
 /**
  * @author ethanace
  */
@@ -32,7 +34,7 @@ public class ReportModel {
         return null;
     }
 
-    public void buildClanReport(String clanTag, String token) throws Exception {
+    public void buildClanReport(String clanTag, String token, ActionRequest action) throws Exception {
 
         Logger.info("Clan Report requested");
         String[] columnHeaders = {"War, Rank", "Name", "Fame", "Participation"};
@@ -83,9 +85,12 @@ public class ReportModel {
                 }
             }
         }
-        
-        IO_MODEL.writeCsv(data, columnHeaders, "Clan Report");
 
+        switch (action) {
+            case POPULATE_TABLE -> Logger.info("Populate Table for Clan Report");
+            case BUILD_REPORT -> IO_MODEL.writeCsv(data, columnHeaders, "Clan Report");
+            default -> throw new Exception("Unknown action");
+        }
     }
 
     public void buildPlayerReport() throws Exception {

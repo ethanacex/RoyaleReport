@@ -7,111 +7,131 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<TabPane prefHeight="173.0" prefWidth="389.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ethanace.Controller">
+<TabPane prefHeight="617.0" prefWidth="647.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ethanace.Controller">
    <tabs>
       <Tab closable="false" text="Reports">
          <content>
-            <HBox prefWidth="400.0">
+            <HBox spacing="10.0">
                <children>
-                  <VBox alignment="CENTER_LEFT" fillWidth="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0">
+                  <VBox fillWidth="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="30.0" HBox.hgrow="NEVER">
                      <children>
-                        <Label text="Clan ID" />
-                        <TextField fx:id="clanTagField" promptText="Enter Clan Tag">
-                           <VBox.margin>
-                              <Insets top="-5.0" />
-                           </VBox.margin>
-                        </TextField>
-                        <ComboBox fx:id="reportList" minWidth="160.0" promptText="War Performance" />
-                        <HBox minWidth="160.0" spacing="30.0">
+                        <VBox maxHeight="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" spacing="5.0" VBox.vgrow="ALWAYS">
                            <children>
-                              <Button mnemonicParsing="false" onAction="#buildReport" text="Build">
-                                 <graphic>
-                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@images/documents-94.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic></Button>
-                              <Button mnemonicParsing="false" onAction="#addToFavourites" text="Add">
-                                 <graphic>
-                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@images/forward-94.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                              </Button>
+                              <Label text="Clan ID" />
+                              <HBox alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
+                                 <children>
+                                    <TextField fx:id="clanTagField" maxWidth="1.7976931348623157E308" promptText="Enter Clan Tag" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="5.0" VBox.vgrow="NEVER">
+                                 <children>
+                                    <Button alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#populateClanTag" HBox.hgrow="ALWAYS">
+                                       <graphic>
+                                          <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" rotate="90.0">
+                                             <image>
+                                                <Image url="@images/back-94.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Button>
+                                    <Button alignment="BOTTOM_CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#addToFavourites" HBox.hgrow="ALWAYS">
+                                       <graphic>
+                                          <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" rotate="-90.0">
+                                             <image>
+                                                <Image url="@images/back-94.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Button>
+                                 </children>
+                              </HBox>
+                              <ComboBox fx:id="reportList" maxWidth="1.7976931348623157E308" minWidth="160.0" promptText="War Performance" />
+                           </children>
+                        </VBox>
+                        <HBox alignment="BOTTOM_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="160.0" VBox.vgrow="ALWAYS">
+                           <children>
+                              <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefWidth="160.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label text="Output" />
+                                    <Button alignment="TOP_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#populateTable" text="Generate Report">
+                                       <graphic>
+                                          <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@images/documents-94.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Button>
+                                    <Button alignment="TOP_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#buildReport" text="Send to Excel">
+                                       <graphic>
+                                          <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@images/excel-48.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Button>
+                                 </children>
+                              </VBox>
                            </children>
                         </HBox>
-                     </children>
-                     <opaqueInsets>
-                        <Insets />
-                     </opaqueInsets>
-                     <HBox.margin>
-                        <Insets />
-                     </HBox.margin>
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="5.0" top="10.0" />
-                     </padding>
-                  </VBox>
-                  <StackPane prefWidth="50.0">
-                     <children>
-                        <Button mnemonicParsing="false" onAction="#populateClanTag" prefHeight="18.0" prefWidth="36.0" StackPane.alignment="TOP_CENTER">
-                           <graphic>
-                              <ImageView fitHeight="15.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/back-94.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                           <StackPane.margin>
-                              <Insets top="32.0" />
-                           </StackPane.margin></Button>
-                     </children>
-                  </StackPane>
-                  <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0">
-                     <children>
-                        <Label text="Favourites" />
-                        <ListView fx:id="favouritesList" prefHeight="60.0" prefWidth="150.0">
-                           <VBox.margin>
-                              <Insets top="-5.0" />
-                           </VBox.margin>
-                        </ListView>
-                        <HBox spacing="15.0">
+                        <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0" VBox.vgrow="ALWAYS">
                            <children>
-                              <Button mnemonicParsing="false" onAction="#savePreferences" text="Save">
-                                 <graphic>
-                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@images/save-94.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic></Button>
-                              <Button mnemonicParsing="false" onAction="#removeFromFavourites" text="Delete">
-                                 <graphic>
-                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@images/close-94.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic></Button>
+                              <Label text="Favourites" />
+                              <ListView fx:id="favouritesList" maxHeight="200.0" maxWidth="160.0">
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin>
+                              </ListView>
+                              <HBox spacing="15.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#savePreferences" text="Save" HBox.hgrow="ALWAYS">
+                                       <graphic>
+                                          <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@images/save-94.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Button>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#removeFromFavourites" text="Delete" HBox.hgrow="ALWAYS">
+                                       <graphic>
+                                          <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@images/close-94.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Button>
+                                 </children>
+                              </HBox>
                            </children>
-                        </HBox>
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </VBox>
                      </children>
-                     <padding>
-                        <Insets bottom="10.0" left="5.0" right="10.0" top="10.0" />
-                     </padding>
                   </VBox>
+                  <TableView prefHeight="566.0" prefWidth="502.0">
+                    <columns>
+                      <TableColumn prefWidth="75.0" />
+                      <TableColumn prefWidth="75.0" />
+                    </columns>
+                  </TableView>
                </children>
+               <padding>
+                  <Insets bottom="15.0" left="10.0" right="10.0" top="15.0" />
+               </padding>
             </HBox>
          </content>
          <graphic>
@@ -129,45 +149,119 @@
          <content>
             <HBox prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <VBox prefHeight="143.0" prefWidth="388.0" spacing="10.0">
+                  <VBox>
                      <children>
-                        <HBox spacing="62.0">
+                        <VBox spacing="10.0" VBox.vgrow="ALWAYS">
                            <children>
-                              <Label text="IPv4 Address">
-                                 <graphic>
-                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@images/at-sign-94.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                              </Label>
-                              <TextField fx:id="ipField" promptText="IP associated with token" HBox.hgrow="ALWAYS" />
-                           </children>
-                        </HBox>
-                        <HBox spacing="25.0">
-                           <children>
-                              <VBox spacing="40.0">
+                              <HBox spacing="62.0">
                                  <children>
-                                    <Label text="Authorisation Token">
+                                    <Label text="IPv4 Address">
                                        <graphic>
                                           <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@images/key-94.png" />
+                                                <Image url="@images/at-sign-94.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </Label>
-                                    <Button mnemonicParsing="false" onAction="#getNewToken" prefHeight="26.0" prefWidth="134.0" text="Get new token" VBox.vgrow="ALWAYS" />
+                                    <TextField fx:id="ipField" promptText="IP associated with token" HBox.hgrow="ALWAYS" />
                                  </children>
-                              </VBox>
-                              <TextArea fx:id="authField" prefHeight="200.0" prefWidth="200.0" promptText="Token associated with IP" wrapText="true" HBox.hgrow="ALWAYS" />
+                              </HBox>
+                              <HBox spacing="25.0" VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <VBox spacing="40.0">
+                                       <children>
+                                          <Label text="Authorisation Token" VBox.vgrow="ALWAYS">
+                                             <graphic>
+                                                <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@images/lock-94.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                          </Label>
+                                          <VBox alignment="BOTTOM_LEFT" VBox.vgrow="ALWAYS">
+                                             <children>
+                                                <Button mnemonicParsing="false" onAction="#getNewToken" prefWidth="134.0" text="Get new token">
+                                                   <graphic>
+                                                      <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                                         <image>
+                                                            <Image url="@images/key-94.png" />
+                                                         </image>
+                                                      </ImageView>
+                                                   </graphic>
+                                                </Button>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </VBox>
+                                    <TextArea fx:id="authField" prefHeight="200.0" prefWidth="200.0" promptText="Token associated with IP" wrapText="true" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
                            </children>
-                        </HBox>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </VBox>
+                        <VBox alignment="BOTTOM_LEFT" spacing="5.0" VBox.vgrow="NEVER">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="345.0" spacing="5.0">
+                                 <children>
+                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@images/help-94.png" />
+                                       </image>
+                                    </ImageView>
+                                    <Label text="Your current IP address:" />
+                                    <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label fx:id="ipLabel" text="192.168.0.0.1">
+                                             <font>
+                                                <Font name="System Bold" size="13.0" />
+                                             </font>
+                                             <padding>
+                                                <Insets left="10.0" />
+                                             </padding>
+                                          </Label>
+                                          <Button id="clipboard" mnemonicParsing="false" onAction="#copyToClipboard" text="Copy">
+                                             <graphic>
+                                                <ImageView fitHeight="20.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@images/inspection-94.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                             <HBox.margin>
+                                                <Insets left="10.0" />
+                                             </HBox.margin>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin>
+                              </HBox>
+                              <HBox fx:id="warningLabel" alignment="CENTER_LEFT" prefHeight="28.0" spacing="5.0">
+                                 <children>
+                                    <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@images/alert-94.png" />
+                                       </image>
+                                    </ImageView>
+                                    <Label maxWidth="1.7976931348623157E308" text="Warning: Mismatch with IP associated with token" textFill="RED" HBox.hgrow="ALWAYS" />
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets bottom="20.0" />
+                                 </VBox.margin>
+                              </HBox>
+                              <Label alignment="CENTER" contentDisplay="TOP" text="If your current IP address does not match the IP address associated with the auth token, then the reports will not work. IP's change when you move onto new WiFi or when your router restarts" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS" />
+                           </children>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </VBox>
                      </children>
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
                   </VBox>
                </children>
             </HBox>
@@ -176,51 +270,6 @@
             <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@images/gear-94.png" />
-               </image>
-            </ImageView>
-         </graphic>
-      </Tab>
-      <Tab closable="false" text="Info">
-         <content>
-            <VBox alignment="CENTER" prefHeight="142.0" prefWidth="389.0" spacing="5.0">
-               <children>
-                  <Label text="Your current IP address" VBox.vgrow="ALWAYS" />
-                  <HBox alignment="CENTER" prefHeight="28.0" prefWidth="345.0" spacing="10.0">
-                     <children>
-                        <Label fx:id="ipLabel" text="192.168.0.0.1">
-                           <font>
-                              <Font name="System Bold" size="13.0" />
-                           </font>
-                           <graphic>
-                              <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/help-94.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Label>
-                        <Button id="clipboard" mnemonicParsing="false" onAction="#copyToClipboard" text="Copy">
-                           <graphic>
-                              <ImageView fitHeight="20.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/inspection-94.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
-                     </children>
-                  </HBox>
-                  <Label alignment="CENTER" contentDisplay="TOP" prefHeight="67.0" prefWidth="366.0" text="If your current IP address does not match the IP address associated with the auth token, then the reports will not work. IP's change when you move onto new WiFi or when your router restarts" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS" />
-               </children>
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
-            </VBox>
-         </content>
-         <graphic>
-            <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@images/info-94.png" />
                </image>
             </ImageView>
          </graphic>

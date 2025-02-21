@@ -40,6 +40,32 @@ public class Controller implements Initializable {
     private IOModel ioModel;
     private NetModel netModel;
     private ReportModel reportModel;
+
+    public enum ActionRequest {
+        POPULATE_TABLE("Populate Table", 1),
+        BUILD_REPORT("Build Report", 2);
+
+        private final String displayText;
+        private final int value;
+
+        ActionRequest(String displayText, int value) {
+            this.displayText = displayText;
+            this.value = value;
+        }
+
+        public String getDisplayText() {
+            return displayText;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return displayText;
+        }
+    }
     
     public enum Report {
         CLAN_PERFORMANCE("Clan Performance", 1),
@@ -123,23 +149,33 @@ public class Controller implements Initializable {
         }
     }
     
-    @FXML
-    private void buildReport() {
+
+    private void processRequest(ActionRequest action) {
         try {
             Report reportType = reportList.getSelectionModel().getSelectedItem();
             String clan = clanTagField.getText();
             String auth = authField.getText();
 
             switch (reportType) {
-                case Report.CLAN_PERFORMANCE -> reportModel.buildClanReport(clan, auth);
-                case Report.PLAYER_PERFORMANCE -> Logger.info(reportType);
-                case Report.PDK -> Logger.info(reportType);
+                case CLAN_PERFORMANCE -> reportModel.buildClanReport(clan, auth, action);
+                case PLAYER_PERFORMANCE -> Logger.info(reportType);
+                case PDK -> Logger.info(reportType);
                 default -> throw new Exception("Unknown report type");
             }
 
         } catch (Exception e) {
             alertUser(AlertType.ERROR, e.getMessage());
         }
+    }
+    
+    @FXML
+    private void populateTable() {
+        processRequest(ActionRequest.POPULATE_TABLE);
+    }
+
+    @FXML
+    private void buildReport() {
+        processRequest(ActionRequest.BUILD_REPORT);
     }
 
     public void alertUser(AlertType type, String message) {
