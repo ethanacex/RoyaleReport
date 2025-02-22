@@ -17,6 +17,7 @@ import java.util.Properties;
 import org.tinylog.Logger;
 
 import javafx.collections.ObservableList;
+import javafx.scene.control.ProgressBar;
 
 /**
  * @author ethanace
@@ -163,7 +164,7 @@ public class IOModel {
         Logger.info("Properties saved successfully");
     }
     
-    public void writeCsv(ObservableList<ObservableList<Object>> data, List<String> headers, String filename) throws Exception {
+    public void writeCsv(ObservableList<ObservableList<Object>> data, List<String> headers, String filename, ProgressBar progressBar) throws Exception {
 
         try (FileWriter csv = initFileTemplate(filename, headers)) {
 
@@ -171,6 +172,8 @@ public class IOModel {
                 for (Object cell : row) {
                     csv.append(cell.toString());
                     csv.append(",");
+                    progressBar.setProgress(progressBar.getProgress() + 1 / (data.size() * headers.size()));
+                Logger.info("Progress: " + progressBar.getProgress());
                 }
                 csv.append("\n");
             }

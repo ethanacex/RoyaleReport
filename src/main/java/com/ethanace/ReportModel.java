@@ -1,7 +1,6 @@
 package com.ethanace;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -10,6 +9,7 @@ import org.tinylog.Logger;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ProgressBar;
 
 /**
  * @author ethanace
@@ -18,12 +18,12 @@ import javafx.collections.ObservableList;
 public class ReportModel {
     
     private final NetModel NET_MODEL;
-    private final IOModel IO_MODEL;
+    private final ProgressBar PROGRESS_BAR;
     private final String API_ENDPOINT = "https://api.clashroyale.com/";
 
-    public ReportModel(NetModel netModel, IOModel ioModel) throws IOException {
+    public ReportModel(NetModel netModel, ProgressBar progressBar) throws IOException {
         NET_MODEL = netModel;
-        IO_MODEL = ioModel;
+        PROGRESS_BAR = progressBar;
         Logger.info("ReportModel initialised successfully");
     }
 
@@ -51,6 +51,8 @@ public class ReportModel {
         ObservableList<ObservableList<Object>> data = FXCollections.observableArrayList();
 
         for (int war = 0; war < items.length(); war++) {
+            PROGRESS_BAR.setProgress((double) war / items.length());
+            Logger.info("Progress: " + PROGRESS_BAR.getProgress());
             JSONArray standings = items.getJSONObject(war).getJSONArray("standings");
             
             for (int i = 0; i < standings.length(); i++) {

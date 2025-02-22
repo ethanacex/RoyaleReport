@@ -7,9 +7,7 @@ import java.util.ResourceBundle;
 
 import org.tinylog.Logger;
 
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -179,10 +177,10 @@ public class Controller implements Initializable {
                     TableColumn<ObservableList<Object>, Object> column = new TableColumn<>(columnHeaders.get(i));
                 
                     Logger.debug("Column index: " + columnIndex);
-                    Logger.info("Adding column: " + columnHeaders.get(i));
+                    Logger.debug("Adding column: " + columnHeaders.get(i));
                     column.setCellValueFactory(cellData -> {
                         Object value = cellData.getValue().get(columnIndex);
-                        Logger.info("Value found: " + value);
+                        Logger.debug("Value found: " + value);
 
                         if (value instanceof Integer) {
                             return new SimpleObjectProperty<>(Integer.valueOf(value.toString()));
@@ -197,9 +195,13 @@ public class Controller implements Initializable {
                 }
         
                 tableView.setItems(rowData);
+                progressBar.setProgress(1);
+                Logger.info("Progress: " + progressBar.getProgress());
             }
             case BUILD_REPORT -> {
-                IO_MODEL.writeCsv(tableData.getRowData(), tableData.getColumnHeaders(), reportType.toString());
+                IO_MODEL.writeCsv(tableData.getRowData(), tableData.getColumnHeaders(), reportType.toString(), progressBar);
+                progressBar.setProgress(1);
+                Logger.info("Progress: " + progressBar.getProgress());
             }
             default ->
                 alertUser(AlertType.ERROR, "Alert: Unknown report type");
@@ -249,16 +251,17 @@ public class Controller implements Initializable {
             alertUser(AlertType.ERROR, e.getMessage());
         }
 
-
     }
 
     @FXML
     private void populateTable() {
+        progressBar.setProgress(0);
         getTableData(ActionRequest.POPULATE_TABLE);
     }
 
     @FXML
     private void buildReport() {
+        progressBar.setProgress(0);
         getTableData(ActionRequest.BUILD_REPORT);
     }
 
@@ -282,10 +285,12 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
+        progressBar.setProgress(0);
+
         try {
             IO_MODEL = new IOModel();
             NET_MODEL = new NetModel();
-            REPORT_MODEL = new ReportModel(NET_MODEL, IO_MODEL);
+            REPORT_MODEL = new ReportModel(NET_MODEL, progressBar);
         } catch (IOException e) {
             alertUser(AlertType.ERROR, e.getMessage());
             return;
