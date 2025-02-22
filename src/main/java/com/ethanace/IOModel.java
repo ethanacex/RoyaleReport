@@ -65,7 +65,7 @@ public class IOModel {
         }
     }
 
-    private FileWriter initFileTemplate(String fileName, String[] columns) throws Exception {
+    private FileWriter initFileTemplate(String fileName, List<String> columns) throws Exception {
         String path = homePath + File.separator + "Reports";
         File file = new File(path, fileName + ".csv");
         try {
@@ -163,12 +163,15 @@ public class IOModel {
         Logger.info("Properties saved successfully");
     }
     
-    public void writeCsv(ArrayList<String> data, String[] headers, String filename) throws Exception {
+    public void writeCsv(ObservableList<ObservableList<Object>> data, List<String> headers, String filename) throws Exception {
 
         try (FileWriter csv = initFileTemplate(filename, headers)) {
 
-            for (String row : data) {
-                csv.append(row);
+            for (ObservableList<Object> row : data) {
+                for (Object cell : row) {
+                    csv.append(cell.toString());
+                    csv.append(",");
+                }
                 csv.append("\n");
             }
 
@@ -200,6 +203,5 @@ public class IOModel {
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(stringSelection, stringSelection);
     }
- 
 }
 

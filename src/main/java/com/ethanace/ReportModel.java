@@ -2,12 +2,14 @@ package com.ethanace;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.tinylog.Logger;
 
-import com.ethanace.Controller.ActionRequest;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 /**
  * @author ethanace
@@ -34,19 +36,19 @@ public class ReportModel {
         return null;
     }
 
-    public void buildClanReport(String clanTag, String token, ActionRequest action) throws Exception {
+
+    public TableData getClanReport(String clanTag, String token) throws Exception {
 
         Logger.info("Clan Report requested");
-        String[] columnHeaders = {"War, Rank", "Name", "Fame", "Participation"};
+        List<String> columnHeaders = List.of("War", "Rank", "Name", "Fame", "Participation");
         String template = API_ENDPOINT + "v1/clans/%s/riverracelog";
         String url = String.format(template, clanTag.replace("#", "%23"));
 
         JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));
         JSONArray items = response.getJSONArray("items");
 
-        StringBuilder row = new StringBuilder();
-        
-        ArrayList<String> data = new ArrayList<>();
+        ObservableList<Object> row = FXCollections.observableArrayList();
+        ObservableList<ObservableList<Object>> data = FXCollections.observableArrayList();
 
         for (int war = 0; war < items.length(); war++) {
             JSONArray standings = items.getJSONObject(war).getJSONArray("standings");
@@ -64,33 +66,28 @@ public class ReportModel {
 
                 if (tag.equalsIgnoreCase(clanTag)) {
 
-                    row.append(war + 1);
-                    row.append(",");
-                    row.append(rank);
-                    row.append(",");
-                    row.append(name);
-                    row.append(",");
-                    row.append(fame);
-                    row.append(",");
+                    row.add(war + 1);
+                    row.add(rank);
+                    row.add(name);
+                    row.add(fame);
+
                     for (int participant = 0; participant < participants.length(); participant++) {
                         if (participants.getJSONObject(participant).getInt("decksUsed") > 0) {
                             participationCount++;
                         }
                     }
-                    row.append(participationCount);
+
+                    row.add(participationCount);
+
+                    // Add final completed row of data to the observable list of rows
+                    data.add(FXCollections.observableArrayList(row));
     
-                    data.add(row.toString());
-    
-                    row = new StringBuilder();
+                    row = FXCollections.observableArrayList();
                 }
             }
         }
 
-        switch (action) {
-            case POPULATE_TABLE -> Logger.info("Populate Table for Clan Report");
-            case BUILD_REPORT -> IO_MODEL.writeCsv(data, columnHeaders, "Clan Report");
-            default -> throw new Exception("Unknown action");
-        }
+        return new TableData(columnHeaders, data);
     }
 
     public void buildPlayerReport() throws Exception {
