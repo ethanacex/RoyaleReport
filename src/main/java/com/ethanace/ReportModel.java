@@ -1,10 +1,8 @@
 package com.ethanace;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -250,7 +248,7 @@ public class ReportModel {
                 String template = API_ENDPOINT + "v1/clans/%s/";
                 String url = String.format(template, clanTag.replace("#", "%23"));
 
-                List<String> columnHeaders = List.of("Player Tag", "Name", "Last Seen", "Days Inactive");
+                List<String> columnHeaders = List.of("Player Tag", "Name", "Donations","Last Seen", "Days Inactive");
 
                 JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));
                 JSONArray memberList = response.getJSONArray("memberList");
@@ -262,16 +260,14 @@ public class ReportModel {
                 int totalIterations = memberList.length();
                 int completedIterations = 0;
 
-                Logger.debug(memberList.toString());
-
                 if (totalIterations > 0) {
                     for (int i = 0; i < memberList.length(); i++) {
                         JSONObject member = memberList.getJSONObject(i);
                         String lastSeen = formatDate(member.getString("lastSeen"));
                         row.add(member.getString("tag"));
                         row.add(member.getString("name"));
+                        row.add(member.getInt("donations"));
                         row.add(lastSeen);
-                        Logger.debug(member.getString("name"), lastSeen);
                         row.add(daysSince(lastSeen));
                         data.add(FXCollections.observableArrayList(row));
                         row = FXCollections.observableArrayList();
