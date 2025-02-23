@@ -40,12 +40,13 @@ public class NetModel {
             if (response.statusCode() == 200) {
                 return response.body();
             } else {
-                Logger.error("Failed to get data: HTTP response code " + response.statusCode());
-                throw new Exception("Failed to get data: HTTP response code " + response.statusCode());
+                String message = String.format("HTTP response code: %s", response.statusCode());
+                Logger.error(message);
+                throw new Exception(message);
             }
         } catch (Exception e) {
-            Logger.error("An error occurred during HTTP GET request");
-            throw new Exception("An error occurred during HTTP GET request: ", e);
+            Logger.error("An error occurred during HTTP GET request: ", e.getMessage());
+            throw new Exception(e.getMessage());
         }
     }
 

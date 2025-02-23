@@ -15,7 +15,9 @@
             "name": "App",
             "request": "launch",
             "mainClass": "com.ethanace/com.ethanace.Main",
-            "projectName": "royalereport"
+            "projectName": "royalereport",
+            "vmArgs": "-Dapple.awt.UIElement=true",
+            "args": ["2>/dev/null"]
         }
     ]
 }

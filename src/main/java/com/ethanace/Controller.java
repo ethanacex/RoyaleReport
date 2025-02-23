@@ -8,6 +8,8 @@ import java.util.ResourceBundle;
 import org.tinylog.Logger;
 
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -23,6 +25,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 /**
  * @author ethanace
@@ -31,6 +35,12 @@ public class Controller implements Initializable {
 
     @FXML
     private Label ipLabel;
+    @FXML
+    private Label httpStatus;
+    @FXML
+    private Label warningLabel;
+    @FXML
+    private ImageView warningIcon;
     @FXML
     private TextField ipField;
     @FXML
@@ -45,6 +55,9 @@ public class Controller implements Initializable {
     private TableView<ObservableList<Object>> tableView;
     @FXML
     private ProgressBar progressBar;
+
+    private final StringProperty ipValue = new SimpleStringProperty();
+    private final StringProperty labelValue = new SimpleStringProperty();
 
     private IOModel IO_MODEL;
     private NetModel NET_MODEL;
@@ -103,6 +116,19 @@ public class Controller implements Initializable {
         }
     }
 
+    // Create a method to unbind the progress bar
+    private void unbindProgressBar() {
+        if (progressBar.progressProperty().isBound()) {
+            progressBar.progressProperty().unbind();
+            progressBar.setProgress(0);
+        }
+    }
+
+// Create a method to reset and bind the progress bar for a new task
+    private void bindProgressBar(Task<?> task) {
+        progressBar.progressProperty().bind(task.progressProperty());
+    }
+
     @FXML
     private void addToFavourites() {
         if (!favouritesList.getItems().contains(clanTagField.getText())) {
@@ -145,7 +171,7 @@ public class Controller implements Initializable {
         try {
             clanTagField.setText(favouritesList.getSelectionModel().getSelectedItem());
         } catch (Exception e) {
-            alertUser(AlertType.ERROR, "Make a valid selection");
+            alertUser(AlertType.ERROR, e.getMessage());
         }
     }
 
@@ -165,7 +191,7 @@ public class Controller implements Initializable {
                 Logger.info("Populating table");
                 tableView.getColumns().clear();
                 tableView.getItems().clear();
-        
+
                 List<String> columnHeaders = tableData.getColumnHeaders();
                 ObservableList<ObservableList<Object>> rowData = tableData.getRowData();
 
@@ -175,12 +201,12 @@ public class Controller implements Initializable {
                 for (int i = 0; i < columnHeaders.size(); i++) {
                     int columnIndex = i;
                     TableColumn<ObservableList<Object>, Object> column = new TableColumn<>(columnHeaders.get(i));
-                
+
                     Logger.debug("Column index: " + columnIndex);
                     Logger.debug("Adding column: " + columnHeaders.get(i));
                     column.setCellValueFactory(cellData -> {
                         Object value = cellData.getValue().get(columnIndex);
-                        Logger.debug("Value found: " + value);
+                        Logger.trace("Value found: " + value);
 
                         if (value instanceof Integer) {
                             return new SimpleObjectProperty<>(Integer.valueOf(value.toString()));
@@ -190,21 +216,17 @@ public class Controller implements Initializable {
                             return new SimpleObjectProperty<>(cellData.getValue().get(columnIndex));
                         }
                     });
-        
+
                     tableView.getColumns().add(column);
                 }
-        
+
                 tableView.setItems(rowData);
-                progressBar.setProgress(1);
-                Logger.info("Progress: " + progressBar.getProgress());
             }
             case BUILD_REPORT -> {
-                IO_MODEL.writeCsv(tableData.getRowData(), tableData.getColumnHeaders(), reportType.toString(), progressBar);
-                progressBar.setProgress(1);
-                Logger.info("Progress: " + progressBar.getProgress());
+                IO_MODEL.writeCsv(tableData.getRowData(), tableData.getColumnHeaders(), reportType.toString());
             }
             default ->
-                alertUser(AlertType.ERROR, "Alert: Unknown report type");
+                alertUser(AlertType.ERROR, "Unknown report type requested");
         }
     }
 
@@ -215,53 +237,120 @@ public class Controller implements Initializable {
             String clan = clanTagField.getText();
             String auth = authField.getText();
 
-            Task<TableData> task;
-            task = new Task<TableData>() {
-                @Override
-                protected TableData call() throws Exception {
-                    switch (reportType) {
-                        case CLAN_PERFORMANCE -> {
-                            return REPORT_MODEL.getClanReport(clan, auth);
+            switch (reportType) {
+                case CLAN_PERFORMANCE -> {
+
+                    unbindProgressBar();
+                    Task<TableData> task = REPORT_MODEL.getClanReport(clan, auth);
+                    bindProgressBar(task);
+
+                    task.setOnSucceeded(event -> {
+                        TableData tableData = task.getValue();
+                        httpStatus.setVisible(true);
+                        httpStatus.setText("Connection OK");
+                        try {
+                            processRequest(tableData, reportType, action);
+                        } catch (Exception e) {
+                            alertUser(AlertType.ERROR, e.getMessage());
                         }
-                        case PLAYER_PERFORMANCE -> {
-                            Logger.info(reportType); return null;
+                    });
+
+                    task.setOnFailed(event -> {
+                        unbindProgressBar();
+                        Throwable exception = task.getException();
+                        if (exception != null) {
+                            httpStatus.setVisible(true);
+                            httpStatus.setText(exception.getMessage());
+                            alertUser(AlertType.ERROR, exception.getMessage());
+                            Logger.error("Task failed with exception: " + exception.getMessage(), exception);
+                        } else {
+                            Logger.error("Task failed, but no exception was set.");
                         }
-                        case PDK -> {
-                            Logger.info(reportType); return null;
-                        }
-                        default -> throw new Exception("Unknown report type");
-                    }
+                    });
+                    
+                    new Thread(task).start();
                 }
-            };
+                case PLAYER_PERFORMANCE -> {
+                    unbindProgressBar();
+                    Task<TableData> task = REPORT_MODEL.getPlayerReport(clan, auth);
+                    bindProgressBar(task);
 
-            task.setOnSucceeded(event -> {
-                TableData tableData = task.getValue();
-                try {
-                    processRequest(tableData, reportType, action);
-                } catch (Exception e) {
-                    alertUser(AlertType.ERROR, e.getMessage());
+                    task.setOnSucceeded(event -> {
+                        TableData tableData = task.getValue();
+                        httpStatus.setVisible(true);
+                        httpStatus.setText("Connection OK");
+                        try {
+                            processRequest(tableData, reportType, action);
+                        } catch (Exception e) {
+                            alertUser(AlertType.ERROR, e.getMessage());
+                        }
+                    });
+
+                    task.setOnFailed(event -> {
+                        unbindProgressBar();
+                        Throwable exception = task.getException();
+                        if (exception != null) {
+                            httpStatus.setVisible(true);
+                            httpStatus.setText(exception.getMessage());
+                            alertUser(AlertType.ERROR, exception.getMessage());
+                            Logger.error("Task failed with exception: " + exception.getMessage(), exception);
+                        } else {
+                            Logger.error("Task failed, but no exception was set.");
+                        }
+                    });
+                    
+                    new Thread(task).start();
                 }
-            });
+                case PDK -> {
+                    unbindProgressBar();
+                    Task<TableData> task = REPORT_MODEL.getPDKReport(clan, auth);
+                    bindProgressBar(task);
 
-            task.setOnFailed(event -> alertUser(AlertType.ERROR, task.getException().getMessage()));
+                    task.setOnSucceeded(event -> {
+                        TableData tableData = task.getValue();
+                        httpStatus.setVisible(true);
+                        httpStatus.setText("Connection OK");
+                        try {
+                            processRequest(tableData, reportType, action);
+                        } catch (Exception e) {
+                            alertUser(AlertType.ERROR, e.getMessage());
+                        }
+                    });
 
-            new Thread(task).start();
+                    task.setOnFailed(event -> {
+                        unbindProgressBar();
+                        Throwable exception = task.getException();
+                        if (exception != null) {
+                            httpStatus.setVisible(true);
+                            httpStatus.setText(exception.getMessage());
+                            alertUser(AlertType.ERROR, exception.getMessage());
+                            Logger.error("Task failed with exception: " + exception.getMessage(), exception);
+                        } else {
+                            Logger.error("Task failed, but no exception was set.");
+                        }
+                    });
+                    
+                    new Thread(task).start();
+                }
+                default -> {
+                    throw new Exception("Unknown report type");
+                }
+            }
 
         } catch (Exception e) {
             alertUser(AlertType.ERROR, e.getMessage());
+            Logger.error("general error");
         }
 
     }
 
     @FXML
     private void populateTable() {
-        progressBar.setProgress(0);
         getTableData(ActionRequest.POPULATE_TABLE);
     }
 
     @FXML
     private void buildReport() {
-        progressBar.setProgress(0);
         getTableData(ActionRequest.BUILD_REPORT);
     }
 
@@ -272,25 +361,48 @@ public class Controller implements Initializable {
         if (type == AlertType.ERROR) {
             alert.setTitle("Error");
             alert.setHeaderText("An error occurred");
+            Logger.error(message);
         } else {
             alert.setTitle("Notification");
             alert.setHeaderText("Information");
+            Logger.info(message);
         }
 
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void updateWarnings() {
+
+        if (ipField.getText().trim().equalsIgnoreCase(ipLabel.getText().trim())) {
+            warningLabel.setText("Local IP matches corresponding authentication IP");
+            warningLabel.setTextFill(javafx.scene.paint.Color.GREEN);
+            warningIcon.setImage(new Image(getClass().getResource("/com/ethanace/images/check-94.png").toExternalForm()));
+        } else {
+            warningLabel.setText("Warning: Mismatch with IP associated with token");
+            warningLabel.setTextFill(javafx.scene.paint.Color.RED);
+            warningIcon.setImage(new Image(getClass().getResource("/com/ethanace/images/alert-94.png").toExternalForm()));
+        }
 
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-        progressBar.setProgress(0);
+        // Bind the properties to the UI components
+        ipValue.bindBidirectional(ipField.textProperty());
+        labelValue.bindBidirectional(ipLabel.textProperty());
+
+        // Add listeners to detect changes
+        ipValue.addListener((obs, oldVal, newVal) -> updateWarnings());
+        labelValue.addListener((obs, oldVal, newVal) -> updateWarnings());
+
+        httpStatus.setVisible(false);
 
         try {
             IO_MODEL = new IOModel();
             NET_MODEL = new NetModel();
-            REPORT_MODEL = new ReportModel(NET_MODEL, progressBar);
+            REPORT_MODEL = new ReportModel(NET_MODEL);
         } catch (IOException e) {
             alertUser(AlertType.ERROR, e.getMessage());
             return;
@@ -312,6 +424,7 @@ public class Controller implements Initializable {
 
         try {
             ipLabel.setText(NET_MODEL.getPublicIP());
+            updateWarnings();
         } catch (Exception e) {
             alertUser(AlertType.ERROR, e.getMessage());
         }
