@@ -116,7 +116,7 @@ public class Controller implements Initializable {
         }
     }
 
-    // Create a method to unbind the progress bar
+// Create a method to unbind the progress bar
     private void unbindProgressBar() {
         if (progressBar.progressProperty().isBound()) {
             progressBar.progressProperty().unbind();
@@ -267,7 +267,6 @@ public class Controller implements Initializable {
                             Logger.error("Task failed, but no exception was set.");
                         }
                     });
-                    
                     new Thread(task).start();
                 }
                 case PLAYER_PERFORMANCE -> {
@@ -298,7 +297,6 @@ public class Controller implements Initializable {
                             Logger.error("Task failed, but no exception was set.");
                         }
                     });
-                    
                     new Thread(task).start();
                 }
                 case PDK -> {
@@ -329,7 +327,6 @@ public class Controller implements Initializable {
                             Logger.error("Task failed, but no exception was set.");
                         }
                     });
-                    
                     new Thread(task).start();
                 }
                 default -> {
@@ -374,7 +371,10 @@ public class Controller implements Initializable {
 
     private void updateWarnings() {
 
-        if (ipField.getText().trim().equalsIgnoreCase(ipLabel.getText().trim())) {
+        String ipFieldText = (ipField.getText() == null) ? "" : ipField.getText().trim();
+        String ipLabelText = (ipLabel.getText() == null) ? "" : ipLabel.getText().trim();
+
+        if (ipFieldText.equalsIgnoreCase(ipLabelText)) {
             warningLabel.setText("Local IP matches corresponding authentication IP");
             warningLabel.setTextFill(javafx.scene.paint.Color.GREEN);
             warningIcon.setImage(new Image(getClass().getResource("/com/ethanace/images/check-94.png").toExternalForm()));
@@ -389,11 +389,11 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-        // Bind the properties to the UI components
+// Bind the properties to the UI components
         ipValue.bindBidirectional(ipField.textProperty());
         labelValue.bindBidirectional(ipLabel.textProperty());
 
-        // Add listeners to detect changes
+// Add listeners to detect changes
         ipValue.addListener((obs, oldVal, newVal) -> updateWarnings());
         labelValue.addListener((obs, oldVal, newVal) -> updateWarnings());
 
