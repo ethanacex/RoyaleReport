@@ -65,6 +65,20 @@ public class IOModel {
         }
     }
 
+    private void createSystemDir() throws IOException {
+        File file = new File(sysDir);
+        try {
+            boolean dirCreated = file.getParentFile().mkdirs();
+            Logger.info("Directory created: " + dirCreated);
+            if (!dirCreated) {
+                Logger.info("Operation will overwrite existing files");
+            }
+        } catch (SecurityException e) {
+            Logger.error("Could not create save report directory", e);
+            throw new IOException("Could not create save report directory", e);
+        }
+    }
+
     private FileWriter initFileTemplate(String fileName, List<String> columns) throws Exception {
         String path = homePath + File.separator + "Reports";
         File file = new File(path, fileName + ".csv");
@@ -156,7 +170,7 @@ public class IOModel {
         // Recreate the directory if a user for some reason deletes or moves the system directory while the app is running
         File file = new File(sysDir);
         if (!file.exists()) {
-            setDirectories();
+            createSystemDir();
         }
 
         try (FileOutputStream out = new FileOutputStream(sysDir)) {
