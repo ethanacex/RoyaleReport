@@ -153,6 +153,12 @@ public class IOModel {
             properties.setProperty(Integer.toString(index), selectedItem);
         }
 
+        // Recreate the directory if a user for some reason deletes or moves the system directory while the app is running
+        File file = new File(sysDir);
+        if (!file.exists()) {
+            setDirectories();
+        }
+
         try (FileOutputStream out = new FileOutputStream(sysDir)) {
             properties.store(out, "Favourites");
         } catch (IOException e) {

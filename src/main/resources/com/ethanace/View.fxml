@@ -33,7 +33,7 @@
                                     <Label text="Clan ID" />
                                     <HBox alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
                                        <children>
-                                          <TextField fx:id="clanTagField" maxWidth="1.7976931348623157E308" promptText="Enter Clan Tag" HBox.hgrow="ALWAYS" />
+                                          <TextField fx:id="clanTagField" maxWidth="1.7976931348623157E308" promptText="Enter clan tag with #" HBox.hgrow="ALWAYS" />
                                        </children>
                                     </HBox>
                                     <HBox spacing="5.0" VBox.vgrow="NEVER">
@@ -162,9 +162,9 @@
                            <children>
                               <VBox spacing="10.0" VBox.vgrow="ALWAYS">
                                  <children>
-                                    <HBox spacing="62.0">
+                                    <HBox spacing="65.0">
                                        <children>
-                                          <Label text="IPv4 Address">
+                                          <Label text="IPv4 address" HBox.hgrow="ALWAYS">
                                              <graphic>
                                                 <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                                                    <image>
@@ -180,7 +180,7 @@
                                        <children>
                                           <VBox spacing="40.0">
                                              <children>
-                                                <Label text="Authorisation Token" VBox.vgrow="ALWAYS">
+                                                <Label text="Authorization token" VBox.vgrow="ALWAYS">
                                                    <graphic>
                                                       <ImageView fitHeight="19.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                                                          <image>
@@ -264,7 +264,7 @@
                                           <Insets bottom="20.0" />
                                        </VBox.margin>
                                     </HBox>
-                                    <Label alignment="CENTER" contentDisplay="TOP" text="If your current IP address does not match the IP address associated with the auth token, then the reports will not work. IP's change when you move onto new WiFi or when your router restarts" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS" />
+                                    <Label alignment="CENTER" contentDisplay="TOP" text="If your current IP address does not match the IP address associated with the token, then the reports will not work. Your IP will change when you move onto a new WiFi network or when your router restarts." textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS" />
                                  </children>
                                  <padding>
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

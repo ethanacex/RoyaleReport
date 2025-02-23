@@ -91,8 +91,8 @@ public class Controller implements Initializable {
 
     public enum Report {
         CLAN_PERFORMANCE("Clan Performance", 1),
-        PLAYER_PERFORMANCE("Player Performance", 2),
-        PDK("PDK Report", 3);
+        WAR_PERFORMANCE("War Performance", 2),
+        PLAYER_ACTIVITY("Player Activity", 3);
 
         private final String displayText;
         private final int value;
@@ -168,10 +168,13 @@ public class Controller implements Initializable {
 
     @FXML
     private void populateClanTag() {
-        try {
-            clanTagField.setText(favouritesList.getSelectionModel().getSelectedItem());
-        } catch (Exception e) {
-            alertUser(AlertType.ERROR, e.getMessage());
+        String selectedItem = favouritesList.getSelectionModel().getSelectedItem();
+        if (checkValidSelection(selectedItem)) {
+            try {
+                clanTagField.setText(favouritesList.getSelectionModel().getSelectedItem());
+            } catch (Exception e) {
+                alertUser(AlertType.ERROR, e.getMessage());
+            }
         }
     }
 
@@ -269,7 +272,7 @@ public class Controller implements Initializable {
                     });
                     new Thread(task).start();
                 }
-                case PLAYER_PERFORMANCE -> {
+                case WAR_PERFORMANCE -> {
                     unbindProgressBar();
                     Task<TableData> task = REPORT_MODEL.getPlayerReport(clan, auth);
                     bindProgressBar(task);
@@ -299,9 +302,9 @@ public class Controller implements Initializable {
                     });
                     new Thread(task).start();
                 }
-                case PDK -> {
+                case PLAYER_ACTIVITY -> {
                     unbindProgressBar();
-                    Task<TableData> task = REPORT_MODEL.getPDKReport(clan, auth);
+                    Task<TableData> task = REPORT_MODEL.getPlayerActivityReport(clan, auth);
                     bindProgressBar(task);
 
                     task.setOnSucceeded(event -> {
@@ -415,8 +418,8 @@ public class Controller implements Initializable {
 
         ObservableList<Report> items = FXCollections.observableArrayList(
                 Report.CLAN_PERFORMANCE,
-                Report.PLAYER_PERFORMANCE,
-                Report.PDK
+                Report.WAR_PERFORMANCE,
+                Report.PLAYER_ACTIVITY
         );
 
         reportList.setItems(items);
@@ -428,5 +431,9 @@ public class Controller implements Initializable {
         } catch (Exception e) {
             alertUser(AlertType.ERROR, e.getMessage());
         }
+    }
+
+    private boolean checkValidSelection(Object selectedItem) {
+        return selectedItem != null && selectedItem != "";
     }
 }

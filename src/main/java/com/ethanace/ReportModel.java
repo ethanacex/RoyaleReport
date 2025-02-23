@@ -3,6 +3,7 @@ package com.ethanace;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -237,13 +238,13 @@ public class ReportModel {
     
     }
 
-    public Task<TableData> getPDKReport(String clanTag, String token) throws Exception {
+    public Task<TableData> getPlayerActivityReport(String clanTag, String token) throws Exception {
 
         return new Task<TableData>() {
             @Override
             protected TableData call() throws Exception {
 
-                Logger.info("PDK Report requested");
+                Logger.info("Player Activity Report requested");
 
                 String template = API_ENDPOINT + "v1/clans/%s/";
                 String url = String.format(template, clanTag.replace("#", "%23"));
@@ -279,7 +280,7 @@ public class ReportModel {
                     updateProgress(1, 1);
                 }
 
-                Logger.info("PDK Report completed");
+                Logger.info("Player Activity Report completed");
                 return new TableData(columnHeaders, data);
                 
             }
