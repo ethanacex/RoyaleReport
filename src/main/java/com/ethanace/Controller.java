@@ -392,11 +392,13 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-// Bind the properties to the UI components
+        System.setProperty("tinylog.writerFile.file", System.getProperty("user.home") + "/RoyaleReport/System/output.log");
+
+        // Bind the properties to the UI components
         ipValue.bindBidirectional(ipField.textProperty());
         labelValue.bindBidirectional(ipLabel.textProperty());
 
-// Add listeners to detect changes
+        // Add listeners to detect changes
         ipValue.addListener((obs, oldVal, newVal) -> updateWarnings());
         labelValue.addListener((obs, oldVal, newVal) -> updateWarnings());
 

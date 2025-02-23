@@ -18,10 +18,6 @@ import org.tinylog.Logger;
 
 import javafx.collections.ObservableList;
 
-/**
- * @author ethanace
- */
-
 public class IOModel {
 
     private List<String> favourites;
@@ -29,22 +25,34 @@ public class IOModel {
     private String localIp;
     private String sysDir;
     private String homePath;
-    
+
     public IOModel() throws IOException {
         init();
     }
 
     private void init() throws IOException {
         setDirectories();
+        createDirectoriesIfNotExists(homePath);
+        createDirectoriesIfNotExists(Paths.get(homePath, "System").toString());
         loadProperties();
         Logger.info("IOModel initialised");
     }
 
     private void setDirectories() {
-        homePath = System.getProperty("user.home") + File.separator + "RoyaleReport";
-        sysDir = Paths.get(homePath + File.separator + "System", "save.properties").toString();
+        homePath = Paths.get(System.getProperty("user.home"), "RoyaleReport").toString();
+        sysDir = Paths.get(homePath, "System", "save.properties").toString();
         Logger.info("Home path set to " + homePath);
         Logger.info("Properties directory set to " + sysDir);
+    }
+
+    private void createDirectoriesIfNotExists(String path) {
+        File directory = new File(path);
+        if (!directory.exists()) {
+            boolean dirCreated = directory.mkdirs();
+            Logger.info("Directory created (" + path + "): " + dirCreated);
+        } else {
+            Logger.info("Directory already exists: " + path);
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -65,40 +73,18 @@ public class IOModel {
         }
     }
 
-    private void createSystemDir() throws IOException {
-        File file = new File(sysDir);
-        try {
-            boolean dirCreated = file.getParentFile().mkdirs();
-            Logger.info("Directory created: " + dirCreated);
-            if (!dirCreated) {
-                Logger.info("Operation will overwrite existing files");
-            }
-        } catch (SecurityException e) {
-            Logger.error("Could not create save report directory", e);
-            throw new IOException("Could not create save report directory", e);
-        }
-    }
-
     private FileWriter initFileTemplate(String fileName, List<String> columns) throws Exception {
-        String path = homePath + File.separator + "Reports";
+        String path = Paths.get(homePath, "Reports").toString();
+        createDirectoriesIfNotExists(path); // Ensure Reports directory exists
+
         File file = new File(path, fileName + ".csv");
-        try {
-            boolean dirCreated = file.getParentFile().mkdirs();
-            Logger.info("Directory created: " + dirCreated);
-            if (!dirCreated) {
-                Logger.info("Operation will overwrite existing files");
-            }
-        } catch (SecurityException e) {
-            Logger.error("Could not create save report directory", e);
-            throw new Exception("Could not create save report directory", e);
-        }
+
         FileWriter csv = new FileWriter(file);
         for (String header : columns) {
-            csv.append(header);
-            csv.append(",");
+            csv.append(header).append(",");
         }
         csv.append("\n");
-        Logger.info("File template initialised");
+        Logger.info("File template initialised at " + file.getAbsolutePath());
         return csv;
     }
 
@@ -111,7 +97,7 @@ public class IOModel {
         File file = new File(sysDir);
 
         favourites = new ArrayList<>();
-        
+
         if (file.exists()) {
             try (FileInputStream in = new FileInputStream(file)) {
                 properties.load(in);
@@ -119,18 +105,22 @@ public class IOModel {
                 localIp = properties.getProperty("ip");
                 Logger.debug("Loaded auth token: " + authToken);
                 Logger.debug("Loaded local IP: " + localIp);
+
                 properties.remove("auth");
                 properties.remove("ip");
+
                 for (String key : properties.stringPropertyNames()) {
                     favourites.add(properties.getProperty(key));
                     Logger.debug("Loaded favourite: " + properties.getProperty(key));
                 }
             } catch (IOException e) {
-                Logger.error("Error when loading file");
+                Logger.error("Error when loading file", e);
                 throw new IOException("Error when loading file", e);
             }
             Logger.info("Properties loaded successfully");
         } else {
+            createDirectoriesIfNotExists(new File(sysDir).getParent());
+
             try (FileOutputStream out = new FileOutputStream(file)) {
                 Logger.info("No properties file found, creating new file");
                 properties.store(out, "Favourites");
@@ -145,7 +135,7 @@ public class IOModel {
     private String getPlatform() {
         return System.getProperty("os.name");
     }
-    
+
     private boolean isWindows() {
         return getPlatform().toLowerCase().contains("win");
     }
@@ -155,46 +145,39 @@ public class IOModel {
     }
 
     public void saveToProperties(ObservableList<String> selectedItems, String ip, String auth) throws IOException {
-
         Properties properties = new Properties();
-
         properties.setProperty("ip", isValidInput(ip) ? ip : "");
         properties.setProperty("auth", isValidInput(auth) ? auth : "");
-        
+
         int index = 0;
         for (String selectedItem : selectedItems) {
             index++;
             properties.setProperty(Integer.toString(index), selectedItem);
         }
 
-        // Recreate the directory if a user for some reason deletes or moves the system directory while the app is running
         File file = new File(sysDir);
         if (!file.exists()) {
-            createSystemDir();
+            createDirectoriesIfNotExists(file.getParent());
         }
 
         try (FileOutputStream out = new FileOutputStream(sysDir)) {
             properties.store(out, "Favourites");
         } catch (IOException e) {
-            Logger.error("I/O Error when writing to file");
+            Logger.error("I/O Error when writing to file", e);
             throw new IOException("I/O Error when writing to file", e);
         }
         Logger.info("Properties saved successfully");
     }
-    
+
     public void writeCsv(ObservableList<ObservableList<Object>> data, List<String> headers, String filename) throws Exception {
-
         try (FileWriter csv = initFileTemplate(filename, headers)) {
-
             for (ObservableList<Object> row : data) {
                 for (Object cell : row) {
-                    csv.append(cell.toString());
-                    csv.append(",");
+                    csv.append(cell.toString()).append(",");
                 }
                 csv.append("\n");
             }
             csv.flush();
-            csv.close();
         } catch (IOException e) {
             Logger.error("Alert: Some error occurred when writing to file.", e);
             throw new IOException("Alert: Some error occurred when writing to file.", e);
@@ -210,7 +193,7 @@ public class IOModel {
     public String getAuthToken() {
         return authToken;
     }
-    
+
     public String getLocalIP() {
         return localIp;
     }
@@ -222,4 +205,3 @@ public class IOModel {
         clipboard.setContents(stringSelection, stringSelection);
     }
 }
-
