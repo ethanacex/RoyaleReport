@@ -14,7 +14,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ComboBox;
@@ -27,6 +30,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 /**
  * @author ethanace
@@ -116,17 +121,45 @@ public class Controller implements Initializable {
         }
     }
 
-// Create a method to unbind the progress bar
     private void unbindProgressBar() {
         if (progressBar.progressProperty().isBound()) {
             progressBar.progressProperty().unbind();
             progressBar.setProgress(0);
+            httpStatus.setVisible(false);
         }
     }
 
-// Create a method to reset and bind the progress bar for a new task
     private void bindProgressBar(Task<?> task) {
         progressBar.progressProperty().bind(task.progressProperty());
+    }
+
+
+    @FXML
+    private void openUserGuide() {
+        try {
+            Parent popup = FXMLLoader.load(getClass().getResource("UserGuide.fxml"));
+            Stage popupStage = new Stage();
+            popupStage.setTitle("User Guide");
+            popupStage.setScene(new Scene(popup));
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.showAndWait();
+        } catch (IOException e) {
+            alertUser(AlertType.ERROR, e.getMessage());
+        }
+    }
+
+    @FXML
+    private void reportBug() {
+        try {
+            Parent popup = FXMLLoader.load(getClass().getResource("ReportBug.fxml"));
+            Stage popupStage = new Stage();
+            popupStage.setTitle("Report Bug");
+            popupStage.setScene(new Scene(popup));
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.showAndWait();
+        } catch (IOException e) {
+            alertUser(AlertType.ERROR, e.getMessage());
+        }
     }
 
     @FXML
