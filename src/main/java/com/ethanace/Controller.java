@@ -141,7 +141,6 @@ public class Controller implements Initializable {
             Stage popupStage = new Stage();
             popupStage.setTitle("User Guide");
             popupStage.setScene(new Scene(popup));
-            popupStage.initModality(Modality.APPLICATION_MODAL);
             popupStage.showAndWait();
         } catch (IOException e) {
             alertUser(AlertType.ERROR, e.getMessage());
