@@ -51,9 +51,18 @@ public class ReportModel {
         return (int) java.time.temporal.ChronoUnit.DAYS.between(lastSeen, today);
     }
 
-    public JSONArray getRiverRaceLog(String clanTag, String token) throws Exception {
-        String template = API_ENDPOINT + "v1/clans/%s/riverracelog";
-        String url = String.format(template, clanTag.replace("#", "%23"));
+    public JSONArray getRiverRaceLog(String clanTag, String token, int limit) throws Exception {
+
+        String template;
+        String url;
+
+        if (limit > 0) {
+            template = API_ENDPOINT + "v1/clans/%s/riverracelog?limit=%d";
+            url = String.format(template, clanTag.replace("#", "%23"), limit);
+        } else {
+            template = API_ENDPOINT + "v1/clans/%s/riverracelog";
+            url = String.format(template, clanTag.replace("#", "%23"));
+        }
 
         JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));
         JSONArray items = response.getJSONArray("items");
@@ -62,7 +71,7 @@ public class ReportModel {
 
     public Task<TableData> getClanReport(String clanTag, String token) throws Exception {
 
-        JSONArray items = getRiverRaceLog(clanTag, token);
+        JSONArray items = getRiverRaceLog(clanTag, token, 0);
 
         return new Task<TableData>() {
             @Override
@@ -132,9 +141,132 @@ public class ReportModel {
         };
     }
 
+    public Task<TableData> getWeeklyReport(String clanTag, String token) throws Exception {
+
+        int limit = 1;
+
+        JSONArray items = getRiverRaceLog(clanTag, token, limit);
+        JSONArray clanM = getClanMembers(clanTag, token);
+
+        return new Task<TableData>() {
+            @Override
+            protected TableData call() throws Exception {
+
+                Logger.info("Weekly Report requested");
+
+                List<String> columnHeaders = List.of("Achievement", "Value", "Player Name", "Player Tag");
+
+                ObservableList<ObservableList<Object>> data = FXCollections.observableArrayList();
+                ObservableList<Object> row = FXCollections.observableArrayList();
+
+                // Step 1: Get highest rated players
+                int highestFame = 0;
+                String highestPlayerTag = "";
+                String highestPlayerName = "";
+                float highestAvgFame = 0;
+                String highestAvgFamePlayerTag = "";
+                String highestAvgFameName = "";
+                int highestDonations = 0;
+                String highestDonationsPlayerTag = "";
+                String highestDonationsPlayerName = "";
+
+                for (int war = 0; war < items.length(); war++) {
+                    JSONArray standings = items.getJSONObject(war).getJSONArray("standings");
+
+                    for (int i = 0; i < standings.length(); i++) {
+                        JSONObject warResult = standings.getJSONObject(i);
+                        JSONObject clan = warResult.getJSONObject("clan");
+                        JSONArray participants = clan.getJSONArray("participants");
+                        String tag = clan.getString("tag");
+
+                        if (tag.equalsIgnoreCase(clanTag)) {
+                            for (int participant = 0; participant < participants.length(); participant++) {
+                                if (participants.getJSONObject(participant).getInt("decksUsed") > 0) {
+                                    String playertag = participants.getJSONObject(participant).getString("tag");
+                                    int fame = participants.getJSONObject(participant).getInt("fame");
+                                    String name = participants.getJSONObject(participant).getString("name");
+                                    int decksUsed = participants.getJSONObject(participant).getInt("decksUsed");
+                                    float avgFame = Math.round((fame / decksUsed) * 100f) / 100f;
+
+                                    if (fame > highestFame) {
+                                        highestFame = fame;
+                                        highestPlayerTag = playertag;
+                                        highestPlayerName = name;
+                                    }
+
+                                    if (avgFame > highestAvgFame) {
+                                        highestAvgFame = avgFame;
+                                        highestAvgFamePlayerTag = playertag;
+                                        highestAvgFameName = name;
+                                    }
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
+
+                String template = API_ENDPOINT + "v1/clans/%s/";
+                String url = String.format(template, clanTag.replace("#", "%23"));
+                JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));
+                JSONArray memberList = response.getJSONArray("memberList");
+
+                // Calculate total iterations
+                int totalIterations = memberList.length();
+                int completedIterations = 0;
+
+                if (totalIterations > 0) {
+                    for (int i = 0; i < memberList.length(); i++) {
+                        JSONObject member = memberList.getJSONObject(i);
+                        int donations = member.getInt("donations");
+
+                        if (donations > highestDonations) {
+                            highestDonations = donations;
+                            highestDonationsPlayerTag = member.getString("tag");
+                            highestDonationsPlayerName = member.getString("name");
+                        }
+
+                        completedIterations++;
+                        updateProgress(completedIterations, totalIterations);
+                        Thread.sleep(3);
+                    }
+                } else {
+                    updateProgress(1, 1);
+                }
+
+                row.add("Highest Fame");
+                row.add(highestFame);
+                row.add(highestPlayerTag);
+                row.add(highestPlayerName);
+                data.add(row);
+
+                row = FXCollections.observableArrayList();
+
+                row.add("Highest Average Fame");
+                row.add(highestAvgFame);
+                row.add(highestAvgFameName);
+                row.add(highestAvgFamePlayerTag);
+                data.add(row);
+
+                row = FXCollections.observableArrayList();
+
+                row.add("Highest Donations");
+                row.add(highestDonations);
+                row.add(highestDonationsPlayerName);
+                row.add(highestDonationsPlayerTag);
+                data.add(row);
+
+                Logger.info("Player Report completed");
+                updateProgress(1, 1);
+                return new TableData(columnHeaders, data);
+            }
+        };
+    }
+
+
     public Task<TableData> getPlayerReport(String clanTag, String token) throws Exception {
 
-        JSONArray items = getRiverRaceLog(clanTag, token);
+        JSONArray items = getRiverRaceLog(clanTag, token, 0);
         JSONArray clanM = getClanMembers(clanTag, token);
 
         return new Task<TableData>() {

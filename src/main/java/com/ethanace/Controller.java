@@ -99,7 +99,8 @@ public class Controller implements Initializable {
     public enum Report {
         CLAN_PERFORMANCE("Clan Performance", 1),
         WAR_PERFORMANCE("War Performance", 2),
-        PLAYER_ACTIVITY("Player Activity", 3);
+        PLAYER_ACTIVITY("Player Activity", 3),
+        WEEKLY_REPORT("Weekly Report", 4);
 
         private final String displayText;
         private final int value;
@@ -365,6 +366,36 @@ public class Controller implements Initializable {
                     });
                     new Thread(task).start();
                 }
+                case WEEKLY_REPORT -> {
+                    unbindProgressBar();
+                    Task<TableData> task = REPORT_MODEL.getWeeklyReport(clan, auth);
+                    bindProgressBar(task);
+
+                    task.setOnSucceeded(event -> {
+                        TableData tableData = task.getValue();
+                        httpStatus.setVisible(true);
+                        httpStatus.setText("Connection OK");
+                        try {
+                            handleReportOutput(tableData, reportType, action, format);
+                        } catch (Exception e) {
+                            alertUser(AlertType.ERROR, e.getMessage());
+                        }
+                    });
+
+                    task.setOnFailed(event -> {
+                        unbindProgressBar();
+                        Throwable exception = task.getException();
+                        if (exception != null) {
+                            httpStatus.setVisible(true);
+                            httpStatus.setText(exception.getMessage());
+                            alertUser(AlertType.ERROR, exception.getMessage());
+                            Logger.error("Task failed with exception: " + exception.getMessage(), exception);
+                        } else {
+                            Logger.error("Task failed, but no exception was set.");
+                        }
+                    });
+                    new Thread(task).start();
+                }
                 default -> {
                     throw new Exception("Unknown report type");
                 }
@@ -458,7 +489,8 @@ public class Controller implements Initializable {
         ObservableList<Report> items = FXCollections.observableArrayList(
                 Report.CLAN_PERFORMANCE,
                 Report.WAR_PERFORMANCE,
-                Report.PLAYER_ACTIVITY
+                Report.PLAYER_ACTIVITY,
+                Report.WEEKLY_REPORT
         );
 
         reportList.setItems(items);
