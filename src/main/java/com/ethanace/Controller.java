@@ -142,6 +142,7 @@ public class Controller implements Initializable {
             Stage popupStage = new Stage();
             popupStage.setTitle("User Guide");
             popupStage.setScene(new Scene(popup));
+            popupStage.setResizable(false);
             popupStage.showAndWait();
         } catch (IOException e) {
             alertUser(AlertType.ERROR, e.getMessage());
@@ -156,6 +157,7 @@ public class Controller implements Initializable {
             popupStage.setTitle("Report Bug");
             popupStage.setScene(new Scene(popup));
             popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.setResizable(false);
             popupStage.showAndWait();
         } catch (IOException e) {
             alertUser(AlertType.ERROR, e.getMessage());
