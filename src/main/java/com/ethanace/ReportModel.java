@@ -45,16 +45,18 @@ public class ReportModel {
         return (int) java.time.temporal.ChronoUnit.DAYS.between(lastSeen, today);
     }
 
-    public JSONObject getRiverRaceLog(String clanTag, String token) throws Exception {
+    public JSONArray getRiverRaceLog(String clanTag, String token) throws Exception {
         String template = API_ENDPOINT + "v1/clans/%s/riverracelog";
         String url = String.format(template, clanTag.replace("#", "%23"));
 
         JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));
         JSONArray items = response.getJSONArray("items");
-        return null;
+        return items;
     }
 
     public Task<TableData> getClanReport(String clanTag, String token) throws Exception {
+
+        JSONArray items = getRiverRaceLog(clanTag, token);
 
         return new Task<TableData>() {
             @Override
@@ -62,13 +64,7 @@ public class ReportModel {
 
                 Logger.info("Clan Report requested");
 
-                String template = API_ENDPOINT + "v1/clans/%s/riverracelog";
-                String url = String.format(template, clanTag.replace("#", "%23"));
-
                 List<String> columnHeaders = List.of("War", "Rank", "Name", "Fame", "Participation");
-
-                JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));
-                JSONArray items = response.getJSONArray("items");
 
                 ObservableList<Object> row = FXCollections.observableArrayList();
                 ObservableList<ObservableList<Object>> data = FXCollections.observableArrayList();
@@ -133,21 +129,17 @@ public class ReportModel {
 
     public Task<TableData> getPlayerReport(String clanTag, String token) throws Exception {
 
+        JSONArray items = getRiverRaceLog(clanTag, token);
+        JSONArray clanM = getClanMembers(clanTag, token);
+
         return new Task<TableData>() {
             @Override
             protected TableData call() throws Exception {
     
                 Logger.info("Player Report requested");
     
-                String template = API_ENDPOINT + "v1/clans/%s/riverracelog";
-                String url = String.format(template, clanTag.replace("#", "%23"));
-    
                 List<String> columnHeaders = List.of("Player Tag", "Name", "Participations", "Participation %");
     
-                JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));
-                JSONArray items = response.getJSONArray("items");
-    
-                JSONArray clanM = getClanMembers(clanTag, token);
                 HashMap<String, String> clanMembers = new HashMap<>();
     
                 for (int member = 0; member < clanM.length(); member++) {
@@ -215,7 +207,7 @@ public class ReportModel {
                         row.add(entry.getKey());
                         if (clanMembers.get(entry.getKey()) == null) {
                             Logger.info("Player Tag: " + entry.getKey() + " not found in clan members list");
-                            JSONObject missingPlayer = getClanMember(entry.getKey(), token);
+                            JSONObject missingPlayer = getPlayer(entry.getKey(), token);
                             row.add(missingPlayer.getString("name"));
                         } else {
                             row.add(clanMembers.get(entry.getKey()));
@@ -296,7 +288,7 @@ public class ReportModel {
         return memberList;
     }
 
-    public JSONObject getClanMember(String tag, String token) throws Exception {
+    public JSONObject getPlayer(String tag, String token) throws Exception {
         String template = API_ENDPOINT + "v1/players/%s";
         String url = String.format(template, tag.replace("#", "%23"), tag.replace("#", "%23"));
         JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));

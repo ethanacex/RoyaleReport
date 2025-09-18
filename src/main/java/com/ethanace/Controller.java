@@ -222,7 +222,7 @@ public class Controller implements Initializable {
         }
     }
 
-    private void handleAction(TableData tableData, Report reportType, ActionRequest action, ReportFormat format) throws Exception {
+    private void handleReportOutput(TableData tableData, Report reportType, ActionRequest action, ReportFormat format) throws Exception {
         switch (action) {
             case POPULATE_TABLE -> {
                 Logger.info("Populating table");
@@ -285,7 +285,7 @@ public class Controller implements Initializable {
                         httpStatus.setVisible(true);
                         httpStatus.setText("Connection OK");
                         try {
-                            handleAction(tableData, reportType, action, format);
+                            handleReportOutput(tableData, reportType, action, format);
                         } catch (Exception e) {
                             alertUser(AlertType.ERROR, e.getMessage());
                         }
@@ -315,7 +315,7 @@ public class Controller implements Initializable {
                         httpStatus.setVisible(true);
                         httpStatus.setText("Connection OK");
                         try {
-                            handleAction(tableData, reportType, action, format);
+                            handleReportOutput(tableData, reportType, action, format);
                         } catch (Exception e) {
                             alertUser(AlertType.ERROR, e.getMessage());
                         }
@@ -345,7 +345,7 @@ public class Controller implements Initializable {
                         httpStatus.setVisible(true);
                         httpStatus.setText("Connection OK");
                         try {
-                            handleAction(tableData, reportType, action, format);
+                            handleReportOutput(tableData, reportType, action, format);
                         } catch (Exception e) {
                             alertUser(AlertType.ERROR, e.getMessage());
                         }
