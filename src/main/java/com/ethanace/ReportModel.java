@@ -7,6 +7,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,6 +27,10 @@ public class ReportModel {
     private final NetModel NET_MODEL;
     private final String API_ENDPOINT = "https://api.clashroyale.com/";
 
+    // Scheduler to enforce rate limits (one call every 120ms ~ 8/sec)
+    private final ScheduledExecutorService scheduler =
+            Executors.newScheduledThreadPool(4);
+
     public ReportModel(NetModel netModel) throws IOException {
         NET_MODEL = netModel;
         Logger.info("ReportModel initialised successfully");
@@ -34,7 +41,6 @@ public class ReportModel {
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         LocalDateTime dateTime = LocalDateTime.parse(inputDate, inputFormatter);
-
         return dateTime.format(outputFormatter);
     }
 
@@ -124,7 +130,6 @@ public class ReportModel {
                 return new TableData(columnHeaders, data);
             }
         };
-
     }
 
     public Task<TableData> getPlayerReport(String clanTag, String token) throws Exception {
@@ -135,99 +140,98 @@ public class ReportModel {
         return new Task<TableData>() {
             @Override
             protected TableData call() throws Exception {
-    
+
                 Logger.info("Player Report requested");
-    
+
                 List<String> columnHeaders = List.of("Player Tag", "Name", "Participations", "Participation %");
-    
+
                 HashMap<String, String> clanMembers = new HashMap<>();
-    
+
                 for (int member = 0; member < clanM.length(); member++) {
                     String tag = clanM.getJSONObject(member).getString("tag");
                     String name = clanM.getJSONObject(member).getString("name");
                     clanMembers.put(tag, name);
                 }
-    
-                ObservableList<Object> row = FXCollections.observableArrayList();
+
                 ObservableList<ObservableList<Object>> data = FXCollections.observableArrayList();
-    
-                // First pass: Calculate total iterations
+
+                // Collect player participations
+                HashMap<String, Integer> players = new HashMap<>();
                 int totalIterations = 0;
-    
+
                 for (int war = 0; war < items.length(); war++) {
                     JSONArray standings = items.getJSONObject(war).getJSONArray("standings");
                     totalIterations += standings.length();
-                }
-    
-                totalIterations += clanM.length();
-                HashMap<String, Integer> players = new HashMap<>();
-    
-                // Second pass: Process data and update progress
-                if (totalIterations > 0) {
-                    int completedIterations = 0;
-    
-                    // First phase: Process the standings and count player participations
-                    for (int war = 0; war < items.length(); war++) {
-                        JSONArray standings = items.getJSONObject(war).getJSONArray("standings");
-    
-                        for (int i = 0; i < standings.length(); i++) {
-                            JSONObject warResult = standings.getJSONObject(i);
-                            JSONObject clan = warResult.getJSONObject("clan");
-                            JSONArray participants = clan.getJSONArray("participants");
-                            String tag = clan.getString("tag");
-    
-                            if (tag.equalsIgnoreCase(clanTag)) {
-    
-                                for (int participant = 0; participant < participants.length(); participant++) {
-                                    if (participants.getJSONObject(participant).getInt("decksUsed") > 0) {
-                                        String playertag = participants.getJSONObject(participant).getString("tag");
-                                        players.put(playertag, players.getOrDefault(playertag, 0) + 1);
-                                    }
+
+                    for (int i = 0; i < standings.length(); i++) {
+                        JSONObject warResult = standings.getJSONObject(i);
+                        JSONObject clan = warResult.getJSONObject("clan");
+                        JSONArray participants = clan.getJSONArray("participants");
+                        String tag = clan.getString("tag");
+
+                        if (tag.equalsIgnoreCase(clanTag)) {
+                            for (int participant = 0; participant < participants.length(); participant++) {
+                                if (participants.getJSONObject(participant).getInt("decksUsed") > 0) {
+                                    String playertag = participants.getJSONObject(participant).getString("tag");
+                                    players.put(playertag, players.getOrDefault(playertag, 0) + 1);
                                 }
                             }
-    
-                            completedIterations++;
-                            updateProgress(completedIterations, totalIterations);  // Update progress during collection of data
-                            Thread.sleep(5);  // Optional: to simulate processing delay
                         }
                     }
-    
-                    // Second phase: Fetch missing players and update progress
-                    int totalMissingPlayers = 0;
-                    for (Map.Entry<String, Integer> entry : players.entrySet()) {
-                        if (clanMembers.get(entry.getKey()) == null) {
-                            totalMissingPlayers++;
-                        }
-                    }
-    
-                    int completedMissingPlayerFetch = 0;
-    
-                    // Fetch missing players
-                    for (Map.Entry<String, Integer> entry : players.entrySet()) {
-                        row.add(entry.getKey());
-                        if (clanMembers.get(entry.getKey()) == null) {
-                            Logger.info("Player Tag: " + entry.getKey() + " not found in clan members list");
-                            JSONObject missingPlayer = getPlayer(entry.getKey(), token);
-                            row.add(missingPlayer.getString("name"));
-                        } else {
-                            row.add(clanMembers.get(entry.getKey()));
-                        }
-                        row.add(entry.getValue());
-                        row.add((int) Math.round(entry.getValue() / (float) items.length() * 100));
-                        data.add(FXCollections.observableArrayList(row));
-                        row = FXCollections.observableArrayList();
-    
-                        completedMissingPlayerFetch++;
-                        updateProgress(completedMissingPlayerFetch + completedIterations, totalIterations + totalMissingPlayers);
-                    }
-    
                 }
-                updateProgress(1, 1);
+
+                // Fetch missing players in parallel with scheduled executor (throttled)
+                List<CompletableFuture<Void>> futures = new ArrayList<>();
+                AtomicInteger completed = new AtomicInteger(0);
+                int delayIncrement = 120; // ms per request ~ 8/sec
+                int counter = 0;
+
+                for (Map.Entry<String, Integer> entry : players.entrySet()) {
+                    String playerTag = entry.getKey();
+                    int participations = entry.getValue();
+                    int delay = counter * delayIncrement;
+                    counter++;
+
+                    CompletableFuture<Void> future = new CompletableFuture<>();
+                    scheduler.schedule(() -> {
+                        try {
+                            String playerName;
+                            if (clanMembers.containsKey(playerTag)) {
+                                playerName = clanMembers.get(playerTag);
+                            } else {
+                                Logger.info("Fetching missing player " + playerTag);
+                                JSONObject missingPlayer = getPlayer(playerTag, token);
+                                playerName = missingPlayer.getString("name");
+                            }
+
+                            ObservableList<Object> row = FXCollections.observableArrayList();
+                            row.add(playerTag);
+                            row.add(playerName);
+                            row.add(participations);
+                            row.add((int) Math.round(participations / (float) items.length() * 100));
+                            synchronized (data) {
+                                data.add(row);
+                            }
+
+                            int done = completed.incrementAndGet();
+                            updateProgress(done, players.size());
+
+                            future.complete(null);
+                        } catch (Exception e) {
+                            future.completeExceptionally(e);
+                            Logger.error(e);
+                        }
+                    }, delay, TimeUnit.MILLISECONDS);
+
+                    futures.add(future);
+                }
+
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
                 Logger.info("Player Report completed");
+                updateProgress(1, 1);
                 return new TableData(columnHeaders, data);
             }
         };
-    
     }
 
     public Task<TableData> getPlayerActivityReport(String clanTag, String token) throws Exception {
@@ -274,10 +278,8 @@ public class ReportModel {
 
                 Logger.info("Player Activity Report completed");
                 return new TableData(columnHeaders, data);
-                
             }
         };
-
     }
 
     public JSONArray getClanMembers(String clanTag, String token) throws Exception {
@@ -290,7 +292,7 @@ public class ReportModel {
 
     public JSONObject getPlayer(String tag, String token) throws Exception {
         String template = API_ENDPOINT + "v1/players/%s";
-        String url = String.format(template, tag.replace("#", "%23"), tag.replace("#", "%23"));
+        String url = String.format(template, tag.replace("#", "%23"));
         JSONObject response = new JSONObject(NET_MODEL.HTTPGet(url, token));
         return response;
     }
