@@ -6,6 +6,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "App",
+      "request": "launch",
+      "mainClass": "com.ethanace.App",
+      "projectName": "royalereport"
+    },
+    {
+      "type": "java",
       "name": "Current File",
       "request": "launch",
       "mainClass": "${file}"
@@ -17,7 +24,9 @@
       "mainClass": "com.ethanace.Main",
       "projectName": "royalereport",
       "vmArgs": "-Dapple.awt.UIElement=true",
-      "args": ["2>/dev/null"]
+      "args": [
+        "2>/dev/null"
+      ]
     }
   ]
 }
