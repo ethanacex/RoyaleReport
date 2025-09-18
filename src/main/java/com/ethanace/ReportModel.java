@@ -256,7 +256,7 @@ public class ReportModel {
                 row.add(highestDonationsPlayerTag);
                 data.add(row);
 
-                Logger.info("Player Report completed");
+                Logger.info("Weekly Report completed");
                 updateProgress(1, 1);
                 return new TableData(columnHeaders, data);
             }
