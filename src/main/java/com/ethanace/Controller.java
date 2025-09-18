@@ -13,6 +13,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -20,6 +21,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -133,7 +135,6 @@ public class Controller implements Initializable {
         progressBar.progressProperty().bind(task.progressProperty());
     }
 
-
     @FXML
     private void openUserGuide() {
         try {
@@ -219,8 +220,7 @@ public class Controller implements Initializable {
         }
     }
 
-    private void processRequest(TableData tableData, Report reportType, ActionRequest action) throws Exception {
-
+    private void handleAction(TableData tableData, Report reportType, ActionRequest action, ReportFormat format) throws Exception {
         switch (action) {
             case POPULATE_TABLE -> {
                 Logger.info("Populating table");
@@ -230,8 +230,8 @@ public class Controller implements Initializable {
                 List<String> columnHeaders = tableData.getColumnHeaders();
                 ObservableList<ObservableList<Object>> rowData = tableData.getRowData();
 
-                Logger.debug("Column headers: " + columnHeaders.toString());
-                Logger.debug("Row data: " + tableData.getRowData().toString());
+                Logger.debug("Column headers: " + columnHeaders);
+                Logger.debug("Row data: " + rowData);
 
                 for (int i = 0; i < columnHeaders.size(); i++) {
                     int columnIndex = i;
@@ -248,7 +248,7 @@ public class Controller implements Initializable {
                         } else if (value instanceof Float || value instanceof Double) {
                             return new SimpleObjectProperty<>(Float.valueOf(value.toString()));
                         } else {
-                            return new SimpleObjectProperty<>(cellData.getValue().get(columnIndex));
+                            return new SimpleObjectProperty<>(value);
                         }
                     });
 
@@ -258,14 +258,13 @@ public class Controller implements Initializable {
                 tableView.setItems(rowData);
             }
             case BUILD_REPORT -> {
-                IO_MODEL.writeCsv(tableData.getRowData(), tableData.getColumnHeaders(), reportType.toString());
+                IO_MODEL.writeReport(tableData.getRowData(), tableData.getColumnHeaders(), reportType.toString(), format);
             }
-            default ->
-                alertUser(AlertType.ERROR, "Unknown report type requested");
+            default -> alertUser(AlertType.ERROR, "Unknown report type requested");
         }
     }
 
-    private void getTableData(ActionRequest action) {
+    private void getTableData(ActionRequest action, ReportFormat format) {
 
         try {
             Report reportType = reportList.getSelectionModel().getSelectedItem();
@@ -284,7 +283,7 @@ public class Controller implements Initializable {
                         httpStatus.setVisible(true);
                         httpStatus.setText("Connection OK");
                         try {
-                            processRequest(tableData, reportType, action);
+                            handleAction(tableData, reportType, action, format);
                         } catch (Exception e) {
                             alertUser(AlertType.ERROR, e.getMessage());
                         }
@@ -314,7 +313,7 @@ public class Controller implements Initializable {
                         httpStatus.setVisible(true);
                         httpStatus.setText("Connection OK");
                         try {
-                            processRequest(tableData, reportType, action);
+                            handleAction(tableData, reportType, action, format);
                         } catch (Exception e) {
                             alertUser(AlertType.ERROR, e.getMessage());
                         }
@@ -344,7 +343,7 @@ public class Controller implements Initializable {
                         httpStatus.setVisible(true);
                         httpStatus.setText("Connection OK");
                         try {
-                            processRequest(tableData, reportType, action);
+                            handleAction(tableData, reportType, action, format);
                         } catch (Exception e) {
                             alertUser(AlertType.ERROR, e.getMessage());
                         }
@@ -378,12 +377,16 @@ public class Controller implements Initializable {
 
     @FXML
     private void populateTable() {
-        getTableData(ActionRequest.POPULATE_TABLE);
+        getTableData(ActionRequest.POPULATE_TABLE, null);
     }
 
     @FXML
-    private void buildReport() {
-        getTableData(ActionRequest.BUILD_REPORT);
+    private void buildReport(ActionEvent event) {
+
+        Button source = (Button) event.getSource();
+        String data = (String) source.getUserData();
+        ReportFormat format = ReportFormat.valueOf(data);
+        getTableData(ActionRequest.BUILD_REPORT, format);
     }
 
     public void alertUser(AlertType type, String message) {

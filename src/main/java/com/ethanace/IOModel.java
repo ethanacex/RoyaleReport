@@ -9,12 +9,18 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.tinylog.Logger;
+
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 import javafx.collections.ObservableList;
 
@@ -169,7 +175,62 @@ public class IOModel {
         Logger.info("Properties saved successfully");
     }
 
-    public void writeCsv(ObservableList<ObservableList<Object>> data, List<String> headers, String filename) throws Exception {
+    private void writePdf(ObservableList<ObservableList<Object>> data, List<String> headers, String filename) throws Exception {
+
+        Path htmlPath = Paths.get(getClass().getClassLoader().getResource("com/ethanace/templates/template.html").toURI());
+        Path cssPath = Paths.get(getClass().getClassLoader().getResource("com/ethanace/templates/styles.html").toURI());
+
+        if (!Files.exists(htmlPath) || !Files.exists(cssPath)) {
+            Logger.error("HTML or CSS template files are missing.");
+            throw new IOException("Required template files are missing.");
+        }
+
+        String html = Files.readString(htmlPath, StandardCharsets.UTF_8);
+        String css = Files.readString(cssPath, StandardCharsets.UTF_8);
+
+        StringBuilder tableRows = new StringBuilder();
+        for (ObservableList<Object> row : data) {
+            tableRows.append("<tr>");
+            for (Object cell : row) {
+                tableRows.append("<td>").append(cell.toString()).append("</td>");
+            }
+            tableRows.append("</tr>");
+        }
+
+        StringBuilder headerRow = new StringBuilder("<tr>");
+        for (String header : headers) {
+            headerRow.append("<th>").append(header).append("</th>");
+        }
+        headerRow.append("</tr>");
+
+        html = html.replace("{{STYLE}}", css)
+                   .replace("{{TITLE}}", filename)
+                   .replace("{{HEADERS}}", headerRow.toString())
+                   .replace("{{ROWS}}", tableRows.toString());
+
+        Logger.debug("HTML content generated for PDF");
+        Logger.debug("HTML content: " + html);
+
+        String outputPath = Paths.get(homePath, "Reports", filename + ".pdf").toString();
+        createDirectoriesIfNotExists(Paths.get(homePath, "Reports").toString());
+
+        try (OutputStream os = new FileOutputStream(outputPath)) {
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+            builder.useFastMode();
+            String baseUri = new File("src/main/resources/").toURI().toString();
+            builder.withHtmlContent(html, baseUri);
+            builder.toStream(os);
+            builder.run();
+            Logger.info("PDF written to " + outputPath);
+        } catch (Exception e) {
+            Logger.error("Error writing PDF report", e.getMessage());
+            throw new IOException("Error writing PDF report", e);
+        }
+
+        openDirectory(Paths.get(homePath, "Reports").toString());
+    }
+
+    private void writeCsv(ObservableList<ObservableList<Object>> data, List<String> headers, String filename) throws Exception {
         try (FileWriter csv = initFileTemplate(filename, headers)) {
             for (ObservableList<Object> row : data) {
                 for (Object cell : row) {
@@ -183,7 +244,15 @@ public class IOModel {
             throw new IOException("Alert: Some error occurred when writing to file.", e);
         }
         Logger.info("CSV file written to " + homePath);
-        openDirectory(homePath);
+        openDirectory(Paths.get(homePath, "Reports").toString());
+    }
+
+    public void writeReport(ObservableList<ObservableList<Object>> data, List<String> headers, String filename, ReportFormat format) throws Exception {
+        switch (format) {
+            case CSV -> writeCsv(data, headers, filename);
+            case PDF -> writePdf(data, headers, filename);
+            default -> throw new IllegalArgumentException("Unsupported report format: " + format);
+        }
     }
 
     public List<String> getFavourites() {
